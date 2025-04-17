@@ -17,16 +17,14 @@ const int INIT_HEIGHT = 600;
 Vector2 window_size = {.x = INIT_WIDTH, .y = INIT_HEIGHT};
 
 void CustomLogCallback(int logLevel, const char *text, va_list args) {
-    FILE *out = stderr;
-    fprintf(out, "[%s] ", (logLevel == LOG_INFO) ? "INFO" :
-			 (logLevel == LOG_WARNING) ? "WARN" :
-			 (logLevel == LOG_ERROR) ? "ERR" : "DEBUG");
+	FILE *out = stderr;
+	fprintf(out, "[%s] ", (logLevel == LOG_INFO) ? "INFO" :
+			      (logLevel == LOG_WARNING) ? "WARN" :
+			      (logLevel == LOG_ERROR) ? "ERR" : "DEBUG");
 
-    vfprintf(out, text, args);
-    fprintf(out, "\n");
+	vfprintf(out, text, args);
+	fprintf(out, "\n");
 }
-
-
 
 int main() {
 	SetTraceLogCallback(CustomLogCallback);
@@ -51,9 +49,7 @@ int main() {
                 }
 
                 if (IsKeyPressed(KEY_ENTER)) {
-			printf("%s\n", lineh->vec->data);
-			fflush(stdout);
-			line_clear(lineh);
+			line_append(lineh, '\n');
                 } else if (IsKeyPressed(KEY_BACKSPACE) && lineh->last > 0) {
 			line_delete_trailing(lineh);
                 }
