@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include "line.h"
+#include "lines.h"
 
 #define STR_LEN 255
 
@@ -24,41 +25,6 @@ void CustomLogCallback(int logLevel, const char *text, va_list args) {
 
 	vfprintf(out, text, args);
 	fprintf(out, "\n");
-}
-
-#include "vector.h"
-
-DEFINE_VECTOR(VEC_LINE, struct line *);
-
-struct lines {
-	VEC_LINE *arr;
-	size_t curr_line;
-};
-
-void lines_init(struct lines **p) {
-	struct lines *lines = MemAlloc(sizeof(struct lines));
-	lines->arr = MemAlloc(sizeof(VEC_LINE));
-	VEC_LINE_init(lines->arr);
-	lines->curr_line = 0;
-	*p = lines;
-}
-
-void lines_append_last(struct lines *p, struct line *line) {
-	VEC_LINE_push(p->arr, line);
-}
-
-void lines_get_last_line(struct lines *p, struct line **last_line) {
-#ifdef DEBUG
-	assert(last_line != NULL);
-#endif
-	*last_line = VEC_LINE_get(p->arr, p->arr->size - 1);
-}
-
-void lines_free(struct lines *p) {
-	for (int i = 0; i < p->arr->size; i++)
-		line_free(p->arr->data[i]);
-        MemFree(p->arr);
-        MemFree(p);
 }
 
 int main() {
@@ -110,6 +76,6 @@ int main() {
 			EndDrawing();
 		}
 	}
-	lines_free(lines);
-	CloseWindow();
+        CloseWindow();
+        lines_free(lines);
 }
