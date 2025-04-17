@@ -1,8 +1,11 @@
+#include <stdlib.h>
 #include <raylib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+
+#include "vec.h"
 
 #define STR_LEN 255
 
