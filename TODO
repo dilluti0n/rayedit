@@ -1,0 +1,27 @@
+- Choose either Criterion or Unity as the testing framework and add a make test target to the build system.
+- Write an initial TDD(Test-Driven Development) set for vector and line.
+
+```
+typedef struct {
+    Vec_Line  lines;
+    size_t    cur_row;
+    size_t    cur_col;
+    size_t    scroll_row;
+} EditorBuffer;
+
+void eb_init(EditorBuffer *eb);
+void eb_insert(EditorBuffer *eb, int ch);
+void eb_backspace(EditorBuffer *eb);
+void eb_newline(EditorBuffer *eb);
+
+void handle_key(EditorBuffer *eb){
+    if(IsKeyPressed(KEY_ENTER))      eb_newline(eb);
+    else if(IsKeyPressed(KEY_BACKSPACE)) eb_backspace(eb);
+    else if(IsKeyPressed(KEY_LEFT))  eb_move_left(eb);
+    // ...
+    int ch; while((ch = GetCharPressed())) eb_insert(eb, ch);
+}
+
+```
+- As implement new Editorbuffer API, white corresponding unit tests.
+- (Optional): Set up CI with Github Actions - copy a template and configure it to run gcc -fsantize=adress &&make test.
