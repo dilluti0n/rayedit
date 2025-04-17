@@ -4,7 +4,7 @@ CC=gcc
 CFLAGS=-Wall -O3 -I${RAYLIB_PREFIX}/include -DMAIN_WINDOW_TITLE="\"${TARGET}\""
 # LDFLAGS=-v
 LDLIBS=${RAYLIB_PREFIX}/lib/libraylib.a -lm
-OBJS=main.o vec.o
+OBJS=main.o vec.o line.o
 
 .PHONY=clean all
 

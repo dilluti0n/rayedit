@@ -1,11 +1,9 @@
-#include <stdlib.h>
 #include <raylib.h>
 #include <stdio.h>
-#include <string.h>
 #include <unistd.h>
 #include <assert.h>
 
-#include "vec.h"
+#include "line.h"
 
 #define STR_LEN 255
 
@@ -21,50 +19,14 @@ Vector2 window_size = {.x = INIT_WIDTH, .y = INIT_HEIGHT};
 void CustomLogCallback(int logLevel, const char *text, va_list args) {
     FILE *out = stderr;
     fprintf(out, "[%s] ", (logLevel == LOG_INFO) ? "INFO" :
-                         (logLevel == LOG_WARNING) ? "WARN" :
-                         (logLevel == LOG_ERROR) ? "ERR" : "DEBUG");
+			 (logLevel == LOG_WARNING) ? "WARN" :
+			 (logLevel == LOG_ERROR) ? "ERR" : "DEBUG");
 
     vfprintf(out, text, args);
     fprintf(out, "\n");
 }
 
-struct line {
-	VEC *vec;
-        size_t cursor;
-        size_t last;            /* always pointing first '\0' */
-};
 
-void line_init(struct line **lip) {
-	struct line *li = MemAlloc(sizeof(struct line));
-        vec_init(&(li->vec));
-        li->cursor = li->last = 0;
-        vec_set(li->vec, li->last, '\0');
-	*lip = li;
-}
-
-void line_append(struct line *li, char c) {
-	if (li->vec->size != 0) {
-		vec_set(li->vec, li->last++, c);
-        } else {
-		vec_push(li->vec, c);
-		li->last++;
-        }
-        vec_push(li->vec, '\0');
-}
-
-void line_delete_trailing(struct line *li) {
-	vec_set(li->vec, --li->last, '\0');
-}
-
-void line_clear(struct line *li) {
-	vec_set(li->vec, 0, '\0');
-	li->vec->size = li->last = 0;
-}
-
-void line_free(struct line *li) {
-	vec_free(li->vec);
-	MemFree(li);
-}
 
 int main() {
 	SetTraceLogCallback(CustomLogCallback);
@@ -89,7 +51,8 @@ int main() {
                 }
 
                 if (IsKeyPressed(KEY_ENTER)) {
-			assert(write(STDOUT_FILENO, lineh->vec->data, lineh->last) >= 0 );
+			printf("%s\n", lineh->vec->data);
+			fflush(stdout);
 			line_clear(lineh);
                 } else if (IsKeyPressed(KEY_BACKSPACE) && lineh->last > 0) {
 			line_delete_trailing(lineh);
