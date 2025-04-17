@@ -1,7 +1,9 @@
 #ifndef LINE_H
 #define LINE_H
 
-#include "vec.h"
+#include "vector.h"
+
+DEFINE_VECTOR(VEC, char);
 
 struct line {
 	VEC *vec;
