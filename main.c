@@ -26,14 +26,51 @@ void CustomLogCallback(int logLevel, const char *text, va_list args) {
 	fprintf(out, "\n");
 }
 
+#include "vector.h"
+
+DEFINE_VECTOR(VEC_LINE, struct line *);
+
+struct lines {
+	VEC_LINE *arr;
+	size_t curr_line;
+};
+
+void lines_init(struct lines **p) {
+	struct lines *lines = MemAlloc(sizeof(struct lines));
+	lines->arr = MemAlloc(sizeof(VEC_LINE));
+	VEC_LINE_init(lines->arr);
+	lines->curr_line = 0;
+	*p = lines;
+}
+
+void lines_append_last(struct lines *p, struct line *line) {
+	VEC_LINE_push(p->arr, line);
+}
+
+void lines_get_last_line(struct lines *p, struct line **last_line) {
+#ifdef DEBUG
+	assert(last_line != NULL);
+#endif
+	*last_line = VEC_LINE_get(p->arr, p->arr->size - 1);
+}
+
+void lines_free(struct lines *p) {
+	for (int i = 0; i < p->arr->size; i++)
+		line_free(p->arr->data[i]);
+        MemFree(p->arr);
+        MemFree(p);
+}
+
 int main() {
 	SetTraceLogCallback(CustomLogCallback);
 	InitWindow(window_size.x, window_size.y, MAIN_WINDOW_TITLE);
 	SetWindowState(FLAG_WINDOW_RESIZABLE);
 	EnableEventWaiting();
 
-        struct line *lineh;
-        line_init(&lineh);
+        struct lines *lines;
+        struct line *line;
+        lines_init(&lines);
+	line_init(&line);
 
 	while (!WindowShouldClose()) {
 		if (IsWindowResized()) {
@@ -43,29 +80,36 @@ int main() {
 
 		{
 			int c;
-                        while ((c = GetCharPressed())) {
-				line_append(lineh, c);
-                        }
-                }
+			while ((c = GetCharPressed())) {
+				line_append(line, c);
+			}
+		}
 
-                if (IsKeyPressed(KEY_ENTER)) {
-			line_append(lineh, '\n');
-                } else if (IsKeyPressed(KEY_BACKSPACE) && lineh->last > 0) {
-			line_delete_trailing(lineh);
-                }
+		if (IsKeyPressed(KEY_ENTER)) {
+			lines_append_last(lines, line);
+			line_init(&line);
+		} else if (IsKeyPressed(KEY_BACKSPACE) && line->last > 0) {
+			line_delete_trailing(line);
+		}
 
-                {
+		{
 			int font_size = 20;
-			int text_width = MeasureText(lineh->vec->data, font_size);
+			int text_width = MeasureText(line->vec->data, font_size);
 
 			BeginDrawing();
 			ClearBackground(RAYWHITE);
-			DrawText(lineh->vec->data,
-				 (window_size.x - text_width) / 2, (window_size.y - font_size) / 2,
-				 font_size, LIGHTGRAY);
+			/* DrawText(lineh->vec->data, */
+			/*	 (window_size.x - text_width) / 2, 0, */
+                        /*	 font_size, BLACK); */
+                        int i;
+                        for (i = 0; i < lines->arr->size; i++) {
+				struct line *p = VEC_LINE_get(lines->arr, i);
+				DrawText(p->vec->data, 10, 10 + font_size * i, font_size, BLACK);
+                        }
+                        DrawText(line->vec->data, 10, 10 + font_size * i, font_size, BLACK);
 			EndDrawing();
 		}
-        }
-	line_free(lineh);
+	}
+	lines_free(lines);
 	CloseWindow();
 }
