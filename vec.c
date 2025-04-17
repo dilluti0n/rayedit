@@ -28,6 +28,15 @@ void vec_push(struct vec *vp, char c) {
         vp->data[vp->size++] = c;
 }
 
+void vec_pop(struct vec *vp) {
+#ifdef DEBUG
+	assert(vp != NULL);
+#endif
+        if (vp->size == 0)
+		return;
+        --vp->size;
+}
+
 size_t vec_len(struct vec *vp) {
 #ifdef DEBUG
 	assert(vp != NULL);

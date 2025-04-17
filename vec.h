@@ -13,7 +13,8 @@ typedef struct vec VEC;
 void vec_init(VEC **vp);
 void vec_push(VEC *vp, char c);
 size_t vec_len(VEC *vp);
+void vec_pop(VEC *vp);
 void vec_set(VEC *vp, size_t index, char c);
-void vec_free(struct vec *vp);
+void vec_free(VEC *vp);
 
 #endif 				/* VEC_H */
