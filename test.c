@@ -9,7 +9,7 @@
 
 DEFINE_VECTOR(Vec_test, char);
 
-Test(vector_suit, init_and_free) {
+Test(vector_suite, init_and_free) {
 	Vec_test *v = malloc(sizeof(Vec_test));
 	assert(v != NULL);
 	Vec_test_init(v);
@@ -20,7 +20,7 @@ Test(vector_suit, init_and_free) {
 	free(v);
 }
 
-Test(vector_suit, grow) {
+Test(vector_suite, grow) {
 	Vec_test *v = malloc(sizeof(Vec_test));
 	assert(v != NULL);
 	Vec_test_init(v);
@@ -42,6 +42,24 @@ Test(vector_suit, grow) {
 	free(v);
 }
 
+Test(vector_suite, push) {
+	Vec_test *v = malloc(sizeof(Vec_test));
+	assert(v != NULL);
+	Vec_test_init(v);
+
+	const size_t len = 4096 * 4096 * 100;
+	char *test_string = malloc(len);
+	assert(test_string != NULL);
+
+	for (size_t i = 0; i < len; i++) {
+		Vec_test_push(v, test_string[i] = rand());
+	}
+	for (size_t i = 0; i < len; i++) {
+		cr_assert_eq(v->data[i], test_string[i],
+			     "Check v->data data integrity when grow (i=%zu)", i);
+	}
+}
+
 Test(line_suite, init_and_free) {
 	struct line *li;
 
@@ -54,12 +72,12 @@ Test(line_suite, init_and_free) {
 
 Test(line_suite, append) {
 	struct line *li;
-	
+
 	line_init(&li);
 	const size_t len = 4096 * 4096 * 100;
 	char *test_string = malloc(len);
 	assert(test_string != NULL);
-	
+
 	for (size_t i = 0; i < len; i++) {
 		line_append(li, test_string[i] = rand());
 	}
