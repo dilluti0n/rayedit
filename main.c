@@ -27,6 +27,43 @@ void CustomLogCallback(int logLevel, const char *text, va_list args) {
 	fprintf(out, "\n");
 }
 
+#include "vector.h"
+
+DEFINE_VECTOR(Vec_Line, struct line *);
+
+struct ed_buf {
+	Vec_Line *lines;
+	size_t cur_row;
+	size_t cur_col;
+	size_t scroll_row;
+};
+
+void eb_init(struct ed_buf **eb) {
+	struct ed_buf *neb = MemAlloc(sizeof(struct ed_buf));
+
+	neb->lines = MemAlloc(sizeof(Vec_Line));
+	Vec_Line_init(neb->lines);
+	neb->cur_row = neb->cur_col = neb->scroll_row = 0;
+
+	*eb = neb;
+}
+
+void eb_insert(struct ed_buf *eb, int ch) {
+	assert("TODO" == 0);
+}
+
+void eb_backspace(struct ed_buf *eb) {
+	assert("TODO" == 0);
+}
+void eb_newline(struct ed_buf *eb) {
+	assert("TODO" == 0);
+}
+
+void eb_free(struct ed_buf *eb) {
+	MemFree(eb->lines);
+	MemFree(eb);
+}
+
 int main() {
 	SetTraceLogCallback(CustomLogCallback);
 	InitWindow(window_size.x, window_size.y, MAIN_WINDOW_TITLE);
