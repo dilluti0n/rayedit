@@ -56,8 +56,31 @@ Test(vector_suite, push) {
 	}
 	for (size_t i = 0; i < len; i++) {
 		cr_assert_eq(v->data[i], test_string[i],
-			     "Check v->data data integrity when grow (i=%zu)", i);
+			     "Check v->data data integrity when push (i=%zu)", i);
 	}
+	free(test_string);
+	Vec_test_free(v);
+	free(v);
+}
+
+Test(vector_suite, pop) {
+	Vec_test *v = malloc(sizeof(Vec_test));
+	assert(v != NULL);
+	Vec_test_init(v);
+
+	Vec_test_pop(v);
+	Vec_test_pop(v);
+	cr_assert_eq(v->size, 0, "Check pop does not lead underflow");
+
+	Vec_test_push(v, 'H');
+	Vec_test_push(v, 'i');
+	Vec_test_pop(v);
+
+	cr_assert_eq(v->size, 1);
+	cr_assert_eq(v->data[v->size - 1], 'H');
+
+	Vec_test_free(v);
+	free(v);
 }
 
 Test(line_suite, init_and_free) {
