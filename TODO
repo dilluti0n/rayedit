@@ -1,4 +1,4 @@
-- Choose either Criterion or Unity as the testing framework and add a make test target to the build system.
+- Choose either Criterion or Unity as the testing framework and add a make test target to the build system. - DONE
 - Write an initial TDD(Test-Driven Development) set for vector and line.
 
 ```

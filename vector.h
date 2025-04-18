@@ -2,8 +2,10 @@
 #define VECTOR_H
 
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>		/* memcpy */
 #include <raylib.h>	 /* MemAlloc, MemFree */
+#include <assert.h>
 
 #ifndef VECTOR_INIT_CAP
 #define VECTOR_INIT_CAP 64
@@ -23,6 +25,7 @@ static inline void name##_init(name *v) {				   \
 static inline void name##_free(name *v) { MemFree(v->data); }		   \
 									   \
 static inline void name##_grow(name *v) {				   \
+	assert(v->capacity < SIZE_MAX / 2);			      \
 	v->capacity <<= 1;						       \
 	type *nd = MemAlloc(v->capacity * sizeof(type));		       \
 	memcpy(nd, v->data, v->size * sizeof(type));			       \
