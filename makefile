@@ -16,5 +16,18 @@ ${TARGET}: ${OBJS}
 %.o: %.c %.h makefile
 	${CC} ${CFLAGS} -c $< -o $@
 
+.PHONY+=test
+TEST_TARGET=unittest
+TEST_PREFIX=./test
+
+test: ${TEST_TARGET}
+	./${TEST_TARGET}
+
+TEST_SRCS = ${TEST_PREFIX}/test_line.c
+
+${TEST_TARGET}: ${TEST_SRCS} ${OBJS}
+	${CC} ${CFLAGS} ${TEST_SRCS} line.o -o $@ -lcriterion ${LDLIBS}
+
 clean:
-	rm -rf ${OBJS} ${TARGET}
+	rm -rf ${OBJS} ${TARGET} ${TEST_TARGET}
+
