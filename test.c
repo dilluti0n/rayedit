@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "../line.h"
-#include "../vector.h"
+#include "line.h"
+#include "vector.h"
 
 DEFINE_VECTOR(Vec_test, char);
 

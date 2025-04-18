@@ -23,10 +23,11 @@ TEST_PREFIX=./test
 test: ${TEST_TARGET}
 	./${TEST_TARGET}
 
-TEST_SRCS = ${TEST_PREFIX}/test_line.c
+TEST_SRCS=test.c
+TEST_OBJS=$(filter-out main.o, $(OBJS))
 
-${TEST_TARGET}: ${TEST_SRCS} ${OBJS}
-	${CC} ${CFLAGS} ${TEST_SRCS} line.o -o $@ -lcriterion ${LDLIBS}
+${TEST_TARGET}: ${TEST_SRCS} ${TEST_OBJS}
+	${CC} ${CFLAGS} ${TEST_SRCS} ${TEST_OBJS} -o $@ -lcriterion ${LDLIBS}
 
 clean:
 	rm -rf ${OBJS} ${TARGET} ${TEST_TARGET}
