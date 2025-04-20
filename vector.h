@@ -41,6 +41,23 @@ static inline size_t name##_len(const name *v){ return v->size; }	   \
 static inline void name##_set(name *v, size_t i, type elem){		   \
 	if (i < v->size) v->data[i] = elem;				       \
 }									   \
-static inline type name##_get(const name *v, size_t i){ return v->data[i]; }
+static inline void name##_insert(name *v, size_t i, type elem) { \
+	if (i > v->size) {\
+		return;\
+	} else if (i == v->size) {\
+		name##_push(v, elem);\
+		return;\
+	}\
+	name##_push(v, 0);\
+	const type *curr = v->data + i;\
+	memmove(curr + 1, curr, v->size - i);\
+	*curr = elem;\
+}\
+\
+static inline type name##_get(const name *v, size_t i) {\
+       return v->data[i];\
+}
+
+/* TODO - replace memmove */
 
 #endif /* VECTOR_H */
