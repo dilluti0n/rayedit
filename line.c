@@ -3,7 +3,7 @@
 
 void line_init(struct line **lip) {
 	struct line *li = MemAlloc(sizeof(struct line));
-	li->vec = MemAlloc(sizeof(Vec_char *));
+	li->vec = MemAlloc(sizeof(Vec_char));
 	Vec_char_init(li->vec);
 	li->cursor = li->last = 0;
 	Vec_char_push(li->vec, '\0');
@@ -31,6 +31,10 @@ void line_clear(struct line *li) {
 	Vec_char_set(li->vec, 0, '\0');
 	li->vec->size = 1;
 	li->last = 0;
+}
+
+void line_set_cursor(struct line *li, size_t pos) {
+	li->cursor = pos;
 }
 
 void line_insert(struct line *li, size_t pos, char ch) {

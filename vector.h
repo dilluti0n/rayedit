@@ -7,6 +7,12 @@
 #include <raylib.h>	 /* MemAlloc, MemFree */
 #include <assert.h>
 
+#ifdef DEBUG
+#include <stdlib.h>
+#define MemAlloc malloc
+#define MemFree free
+#endif
+
 #ifndef VECTOR_INIT_CAP
 #define VECTOR_INIT_CAP 64
 #endif
@@ -20,14 +26,18 @@ typedef struct {							\
 static inline void name##_init(name *v) {				   \
 	v->size = 0;							       \
 	v->capacity = VECTOR_INIT_CAP;					       \
-	v->data = MemAlloc(v->capacity * sizeof(type));			       \
+	const size_t to_alloc = v->capacity * sizeof(type);\
+	v->data = MemAlloc(to_alloc);			       \
+	memset(v->data, 0, to_alloc);\
 }									   \
 static inline void name##_free(name *v) { MemFree(v->data); }		   \
 									   \
 static inline void name##_grow(name *v) {				   \
 	assert(v->capacity < SIZE_MAX / 2);			      \
 	v->capacity <<= 1;						       \
-	type *nd = MemAlloc(v->capacity * sizeof(type));		       \
+	const size_t to_alloc = v->capacity * sizeof(type);\
+	type *nd = MemAlloc(to_alloc);		       \
+	memset(nd, 0, to_alloc);\
 	memcpy(nd, v->data, v->size * sizeof(type));			       \
 	MemFree(v->data);						       \
 	v->data = nd;							       \
@@ -57,9 +67,9 @@ static inline void name##_insert(name *v, size_t i, type elem) { \
 	        name##_push(v, elem);\
 		return;\
 	}\
-	name##_push(v, 0);\
+	name##_grow_size(v, v->size + 1);\
 	type *curr = v->data + i;\
-	memmove(curr + 1, curr, v->size - i - 1);\
+	memmove(curr + 1, curr, (v->size - i - 1) * sizeof(type));\
 	*curr = elem;\
 }\
 \

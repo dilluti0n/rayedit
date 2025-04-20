@@ -2,11 +2,14 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <assert.h>
+#include <stdlib.h>
+
+#ifdef DEBUG
+#define MemAlloc malloc
+#define MemFree free
+#endif
 
 #include "line.h"
-#include "lines.h"
-
-#define STR_LEN 255
 
 #ifndef MAIN_WINDOW_TITLE
 #define MAIN_WINDOW_TITLE "window"
@@ -32,7 +35,7 @@ void CustomLogCallback(int logLevel, const char *text, va_list args) {
 DEFINE_VECTOR(Vec_slinep, struct line *);
 
 struct ed_buf {
-	Vec_slinep *line_arr;
+	Vec_slinep *line_vec;
 	size_t cur_row;
 	size_t cur_col;
 	size_t scroll_row;
@@ -41,8 +44,8 @@ struct ed_buf {
 void eb_init(struct ed_buf **eb) {
 	struct ed_buf *neb = MemAlloc(sizeof(struct ed_buf));
 
-	neb->line_arr = MemAlloc(sizeof(Vec_slinep *));
-	Vec_slinep_init(neb->line_arr);
+	neb->line_vec = MemAlloc(sizeof(Vec_slinep));
+	Vec_slinep_init(neb->line_vec);
 	neb->cur_row = neb->cur_col = neb->scroll_row = 0;
 
 	*eb = neb;
@@ -55,28 +58,33 @@ void eb_insert(struct ed_buf *eb, int ch) {
 	printf("eb->cur_col %d\n", eb->cur_col);
 #endif
 	struct line *line;
-	if (Vec_slinep_len(eb->line_arr) <= eb->cur_col) {
+	if (Vec_slinep_len(eb->line_vec) <= eb->cur_col ||
+	    (line = Vec_slinep_get(eb->line_vec, eb->cur_col)) == NULL) {
 		line_init(&line);
-		Vec_slinep_insert(eb->line_arr, eb->cur_col, line);
+		Vec_slinep_insert(eb->line_vec, eb->cur_col, line);
 	}
-	line = Vec_slinep_get(eb->line_arr, eb->cur_col);
 	line_insert(line, eb->cur_row, ch);
 }
 
 void eb_backspace(struct ed_buf *eb) {
 	assert("TODO" == 0);
 }
+
 void eb_newline(struct ed_buf *eb) {
-	assert("TODO" == 0);
+	struct line *curr = Vec_slinep_get(eb->line_vec, eb->cur_col);
+	if (curr != NULL) {
+		line_set_cursor(curr, eb->cur_row);
+	}
+	Vec_slinep_insert(eb->line_vec, eb->cur_col++, NULL);
 }
 
 void eb_free(struct ed_buf *eb) {
-	for (size_t i = 0; i < Vec_slinep_len(eb->line_arr); i++) {
+	for (size_t i = 0; i < Vec_slinep_len(eb->line_vec); i++) {
 		struct line *curr;
-		if ((curr = Vec_slinep_get(eb->line_arr, i)) != NULL)
+		if ((curr = Vec_slinep_get(eb->line_vec, i)) != NULL)
 			MemFree(curr);
 	}
-	MemFree(eb->line_arr);
+	MemFree(eb->line_vec);
 	MemFree(eb);
 }
 
@@ -118,9 +126,15 @@ int main() {
 			/*	 (window_size.x - text_width) / 2, 0, */
 			/*	 font_size, BLACK); */
 			size_t i;
-			for (i = 0; i < Vec_slinep_len(eb->line_arr); i++) {
-				struct line *p = Vec_slinep_get(eb->line_arr, i);
-				DrawText(p->vec->data, 10, 10 + font_size * i, font_size, BLACK);
+			for (i = 0; i < Vec_slinep_len(eb->line_vec); i++) {
+				struct line *line = (eb->line_vec->data[i]);
+				char *to_draw;
+				if (line != NULL && line->vec != NULL)
+					to_draw = line->vec->data;
+				else
+					to_draw = "\n";
+				DrawText(to_draw, 10, 10 + font_size * i,
+						 font_size, BLACK);
 			}
 			EndDrawing();
 		}
