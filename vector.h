@@ -32,6 +32,13 @@ static inline void name##_grow(name *v) {				   \
 	MemFree(v->data);						       \
 	v->data = nd;							       \
 }									   \
+static inline void name##_grow_size(name *v, size_t size) {\
+	if (size < v->size)\
+	        return;\
+	while (size > v->capacity)\
+        	name##_grow(v);\
+	v->size = size;\
+}\
 static inline void name##_push(name *v, type elem) {			   \
 	if (v->size >= v->capacity) name##_grow(v);			       \
 	v->data[v->size++] = elem;					       \
@@ -43,14 +50,16 @@ static inline void name##_set(name *v, size_t i, type elem){		   \
 }									   \
 static inline void name##_insert(name *v, size_t i, type elem) { \
 	if (i > v->size) {\
-		return;\
+                name##_grow_size(v, i + 1);\
+	        v->data[i] = elem;\
+	        return;\
 	} else if (i == v->size) {\
-		name##_push(v, elem);\
+	        name##_push(v, elem);\
 		return;\
 	}\
 	name##_push(v, 0);\
-	const type *curr = v->data + i;\
-	memmove(curr + 1, curr, v->size - i);\
+	type *curr = v->data + i;\
+	memmove(curr + 1, curr, v->size - i - 1);\
 	*curr = elem;\
 }\
 \

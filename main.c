@@ -29,10 +29,10 @@ void CustomLogCallback(int logLevel, const char *text, va_list args) {
 
 #include "vector.h"
 
-DEFINE_VECTOR(Vec_Line, struct line *);
+DEFINE_VECTOR(Vec_slinep, struct line *);
 
 struct ed_buf {
-	Vec_Line *lines;
+	Vec_slinep *line_arr;
 	size_t cur_row;
 	size_t cur_col;
 	size_t scroll_row;
@@ -41,15 +41,26 @@ struct ed_buf {
 void eb_init(struct ed_buf **eb) {
 	struct ed_buf *neb = MemAlloc(sizeof(struct ed_buf));
 
-	neb->lines = MemAlloc(sizeof(Vec_Line));
-	Vec_Line_init(neb->lines);
+	neb->line_arr = MemAlloc(sizeof(Vec_slinep *));
+	Vec_slinep_init(neb->line_arr);
 	neb->cur_row = neb->cur_col = neb->scroll_row = 0;
 
 	*eb = neb;
 }
 
 void eb_insert(struct ed_buf *eb, int ch) {
-	assert("TODO" == 0);
+#ifdef DEBUG
+	assert(eb != NULL);
+	printf("%s(%p, %c)\n", __func__, eb, ch);
+	printf("eb->cur_col %d\n", eb->cur_col);
+#endif
+	struct line *line;
+	if (Vec_slinep_len(eb->line_arr) <= eb->cur_col) {
+		line_init(&line);
+		Vec_slinep_insert(eb->line_arr, eb->cur_col, line);
+	}
+	line = Vec_slinep_get(eb->line_arr, eb->cur_col);
+	line_insert(line, eb->cur_row, ch);
 }
 
 void eb_backspace(struct ed_buf *eb) {
@@ -60,7 +71,12 @@ void eb_newline(struct ed_buf *eb) {
 }
 
 void eb_free(struct ed_buf *eb) {
-	MemFree(eb->lines);
+	for (size_t i = 0; i < Vec_slinep_len(eb->line_arr); i++) {
+		struct line *curr;
+		if ((curr = Vec_slinep_get(eb->line_arr, i)) != NULL)
+			MemFree(curr);
+	}
+	MemFree(eb->line_arr);
 	MemFree(eb);
 }
 
@@ -70,10 +86,8 @@ int main() {
 	SetWindowState(FLAG_WINDOW_RESIZABLE);
 	EnableEventWaiting();
 
-	struct lines *lines;
-	struct line *line;
-	lines_init(&lines);
-	line_init(&line);
+	struct ed_buf *eb;
+	eb_init(&eb);
 
 	while (!WindowShouldClose()) {
 		if (IsWindowResized()) {
@@ -84,20 +98,19 @@ int main() {
 		{
 			int c;
 			while ((c = GetCharPressed())) {
-				line_append(line, c);
+				eb_insert(eb, c);
 			}
 		}
 
 		if (IsKeyPressed(KEY_ENTER)) {
-			lines_append_last(lines, line);
-			line_init(&line);
-		} else if (IsKeyPressed(KEY_BACKSPACE) && line->last > 0) {
-			line_delete_trailing(line);
+			eb_newline(eb);
+		} else if (IsKeyPressed(KEY_BACKSPACE)) {
+			eb_backspace(eb);
 		}
 
 		{
 			int font_size = 20;
-			int text_width = MeasureText(line->vec->data, font_size);
+			/* int text_width = MeasureText(line->vec->data, font_size); */
 
 			BeginDrawing();
 			ClearBackground(RAYWHITE);
@@ -105,14 +118,13 @@ int main() {
 			/*	 (window_size.x - text_width) / 2, 0, */
 			/*	 font_size, BLACK); */
 			size_t i;
-			for (i = 0; i < lines->arr->size; i++) {
-				struct line *p = VEC_LINE_get(lines->arr, i);
+			for (i = 0; i < Vec_slinep_len(eb->line_arr); i++) {
+				struct line *p = Vec_slinep_get(eb->line_arr, i);
 				DrawText(p->vec->data, 10, 10 + font_size * i, font_size, BLACK);
 			}
-			DrawText(line->vec->data, 10, 10 + font_size * i, font_size, BLACK);
 			EndDrawing();
 		}
 	}
 	CloseWindow();
-	lines_free(lines);
+	eb_free(eb);
 }
