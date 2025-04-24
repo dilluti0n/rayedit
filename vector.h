@@ -77,12 +77,14 @@
 		*curr = elem;						\
 	}								\
 	static inline void name##_delete(name *v, size_t i) {		\
-		type *to_delete = v->data + i, *to_move = to_delete + 1; \
+		type *to_delete = v->data + i;				\
+		type *to_move = v->data + i + 1;				\
 		memmove(to_delete, to_move, (v->size - i - 1) * sizeof(type)); \
 		v->size -= 1;						\
 	}								\
 	static inline void name##_deleten(name *v, size_t i, int n) {	\
-		type *to_delete = v->data + i, *to_move = to_delete + n; \
+		type *to_delete = v->data + i;				\
+		type *to_move = v->data + i + n;			\
 		memmove(to_delete, to_move, (v->size - i - n) * sizeof(type)); \
 		v->size -= n;						\
 	}								\

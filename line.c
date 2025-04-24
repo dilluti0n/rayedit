@@ -20,6 +20,10 @@ void line_append(struct line *li, char c) {
 	Vec_char_push(li->vec, '\0');
 }
 
+void line_delete(struct line *li, size_t pos) {
+	assert("TODO" == 0);
+}
+
 void line_delete_trailing(struct line *li) {
 	if (li->last != 0)
 		--li->last;

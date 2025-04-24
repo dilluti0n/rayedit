@@ -55,27 +55,40 @@ void eb_insert(struct ed_buf *eb, int ch) {
 #ifdef DEBUG
 	assert(eb != NULL);
 	printf("%s(%p, %c)\n", __func__, eb, ch);
-	printf("eb->cur_col %d\n", eb->cur_col);
+	printf("eb->cur_row %d\n", eb->cur_row);
 #endif
 	struct line *line;
-	if (Vec_slinep_len(eb->line_vec) <= eb->cur_col ||
-	    (line = Vec_slinep_get(eb->line_vec, eb->cur_col)) == NULL) {
+	if (Vec_slinep_len(eb->line_vec) <= eb->cur_row ||
+	    (line = Vec_slinep_get(eb->line_vec, eb->cur_row)) == NULL) {
 		line_init(&line);
-		Vec_slinep_insert(eb->line_vec, eb->cur_col, line);
+		Vec_slinep_insert(eb->line_vec, eb->cur_row, line);
 	}
-	line_insert(line, eb->cur_row, ch);
+	line_insert(line, eb->cur_col, ch);
 }
 
 void eb_backspace(struct ed_buf *eb) {
-	assert("TODO" == 0);
+	if (eb->cur_col == 0) {	      /* backspace to upper line */
+		if (eb->cur_row == 0) /* nothing to remove */
+			return;
+		size_t upper_line_index = eb->cur_row - 1;
+		struct line *upper_line = Vec_slinep_get(eb->line_vec, upper_line_index);
+		if (upper_line != NULL)
+			line_free(upper_line);
+		Vec_slinep_delete(eb->line_vec, upper_line_index);
+		eb->cur_row--;
+	} else {
+		struct line *curr_line = Vec_slinep_get(eb->line_vec, eb->cur_row);
+		line_delete(curr_line, eb->cur_col--);
+	}
+	
 }
 
 void eb_newline(struct ed_buf *eb) {
-	struct line *curr = Vec_slinep_get(eb->line_vec, eb->cur_col);
+	struct line *curr = Vec_slinep_get(eb->line_vec, eb->cur_row);
 	if (curr != NULL) {
-		line_set_cursor(curr, eb->cur_row);
+		line_set_cursor(curr, eb->cur_col);
 	}
-	Vec_slinep_insert(eb->line_vec, eb->cur_col++, NULL);
+	Vec_slinep_insert(eb->line_vec, eb->cur_row++, NULL);
 }
 
 void eb_free(struct ed_buf *eb) {
