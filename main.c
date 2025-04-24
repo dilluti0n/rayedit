@@ -44,8 +44,7 @@ struct ed_buf {
 void eb_init(struct ed_buf **eb) {
 	struct ed_buf *neb = MemAlloc(sizeof(struct ed_buf));
 
-	neb->line_vec = MemAlloc(sizeof(Vec_slinep));
-	Vec_slinep_init(neb->line_vec);
+	Vec_slinep_init(&neb->line_vec);
 	neb->cur_row = neb->cur_col = neb->scroll_row = 0;
 
 	*eb = neb;
@@ -97,7 +96,6 @@ void eb_free(struct ed_buf *eb) {
 		if ((curr = Vec_slinep_get(eb->line_vec, i)) != NULL)
 			MemFree(curr);
 	}
-	MemFree(eb->line_vec);
 	MemFree(eb);
 }
 

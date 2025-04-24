@@ -23,15 +23,18 @@
 		size_t	size, capacity;					\
 	} name;								\
 									\
-	static inline void name##_init(name *v) {			\
-		v->size = 0;						\
-		v->capacity = VECTOR_INIT_CAP;				\
-		const size_t to_alloc = v->capacity * sizeof(type);	\
-		v->data = MemAlloc(to_alloc);				\
-		memset(v->data, 0, to_alloc);				\
+	static inline void name##_init(name **v) {			\
+		name *nv = MemAlloc(sizeof (name));			\
+		nv->size = 0;						\
+		nv->capacity = VECTOR_INIT_CAP;				\
+		const size_t to_alloc = nv->capacity * sizeof(type);	\
+		nv->data = MemAlloc(to_alloc);				\
+		memset(nv->data, 0, to_alloc);				\
+		*v = nv;						\
 	}								\
 	static inline void name##_free(name *v) {			\
 		MemFree(v->data);					\
+		MemFree(v);						\
 	}								\
 	static inline void name##_grow(name *v) {			\
 		assert(v->capacity < SIZE_MAX / 2);			\

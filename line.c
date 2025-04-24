@@ -3,8 +3,7 @@
 
 void line_init(struct line **lip) {
 	struct line *li = MemAlloc(sizeof(struct line));
-	li->vec = MemAlloc(sizeof(Vec_char));
-	Vec_char_init(li->vec);
+	Vec_char_init(&li->vec);
 	li->cursor = li->last = 0;
 	Vec_char_push(li->vec, '\0');
 	*lip = li;
