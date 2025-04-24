@@ -62,7 +62,7 @@ void eb_insert(struct ed_buf *eb, int ch) {
 		line_init(&line);
 		Vec_slinep_insert(eb->line_vec, eb->cur_row, line);
 	}
-	line_insert(line, eb->cur_col, ch);
+	line_insert(line, eb->cur_col++, ch);
 }
 
 void eb_backspace(struct ed_buf *eb) {
