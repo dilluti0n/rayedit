@@ -83,8 +83,9 @@ void eb_backspace(struct ed_buf *eb) {
 }
 
 void eb_newline(struct ed_buf *eb) {
+	assert("TODO - insert newline on middle or end of line" == 0);
 	struct line *curr = Vec_slinep_get(eb->line_vec, eb->cur_row);
-	if (curr != NULL) {
+	if (curr != NULL) {	/* cache the cursor */
 		line_set_cursor(curr, eb->cur_col);
 	}
 	Vec_slinep_insert(eb->line_vec, eb->cur_row++, NULL);

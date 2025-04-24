@@ -47,10 +47,10 @@
 		v->data = nd;						\
 	}								\
 	static inline void name##_grow_size(name *v, size_t size) {	\
-		if (size < v->size)					\
-			return;						\
-		while (size > v->capacity)				\
-			name##_grow(v);					\
+		if (size > v->size) {					\
+			while (size > v->capacity)			\
+				name##_grow(v);				\
+		}							\
 		v->size = size;						\
 	}								\
 	static inline void name##_push(name *v, type elem) {		\
