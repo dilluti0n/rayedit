@@ -77,6 +77,10 @@ void line_insert(struct line *li, size_t pos, char ch) {
 	li->last++;
 }
 
+void line_cat(struct line *dest, const struct line *src) {
+	assert("TODO" == 0);
+}
+
 void line_free(struct line *li) {
 	Vec_char_free(li->vec);
 	MemFree(li);

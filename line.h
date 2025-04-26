@@ -15,6 +15,7 @@ void line_set_cursor(struct line *li, size_t pos);
 size_t line_get_last(struct line *li);
 const char *line_get_string(struct line *li);
 void line_split(struct line *li, size_t pos, struct line **newlinep);
+void line_cat(struct line *dest, const struct line *src);
 void line_free(struct line *li);
 
 #endif
