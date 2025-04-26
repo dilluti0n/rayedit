@@ -1,3 +1,4 @@
+#include "config.h"
 #include "raylib.h"
 #include "line.h"
 
@@ -20,7 +21,8 @@ void line_append(struct line *li, char c) {
 }
 
 void line_delete(struct line *li, size_t pos) {
-	assert("TODO" == 0);
+	ASSERT(pos > 0 && pos < li->size);
+	Vec_char_delete(li->vec, pos);
 }
 
 void line_delete_trailing(struct line *li) {
@@ -42,6 +44,7 @@ void line_set_cursor(struct line *li, size_t pos) {
 
 void line_insert(struct line *li, size_t pos, char ch) {
 	Vec_char_insert(li->vec, pos, ch);
+	li->last++;
 }
 
 void line_free(struct line *li) {

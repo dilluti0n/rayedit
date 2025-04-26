@@ -69,7 +69,7 @@ void eb_backspace(struct ed_buf *eb) {
 	if (eb->cur_col == 0) {	      /* backspace to upper line */
 		if (eb->cur_row == 0) /* nothing to remove */
 			return;
-		size_t upper_line_index = eb->cur_row - 1;
+	size_t upper_line_index = eb->cur_row - 1;
 		struct line *upper_line = Vec_slinep_get(eb->line_vec, upper_line_index);
 		if (upper_line != NULL)
 			line_free(upper_line);
@@ -77,9 +77,9 @@ void eb_backspace(struct ed_buf *eb) {
 		eb->cur_row--;
 	} else {
 		struct line *curr_line = Vec_slinep_get(eb->line_vec, eb->cur_row);
-		line_delete(curr_line, eb->cur_col--);
+		line_delete(curr_line, --eb->cur_col);
 	}
-	
+
 }
 
 void eb_newline(struct ed_buf *eb) {
@@ -97,6 +97,7 @@ void eb_free(struct ed_buf *eb) {
 		if ((curr = Vec_slinep_get(eb->line_vec, i)) != NULL)
 			MemFree(curr);
 	}
+	Vec_slinep_free(eb->line_vec);
 	MemFree(eb);
 }
 
