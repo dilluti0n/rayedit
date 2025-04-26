@@ -6,8 +6,8 @@
 DEFINE_VECTOR(Vec_char, char);
 
 struct line {
-	Vec_char *vec;
-        size_t cursor;          /* cache for callback last position */
+	Vec_char *vec;		/* always allocated; initial state is ['\0'] */
+        size_t cursor;          /* cache used to callback last position */
         size_t last;            /* always pointing first '\0' */
 };
 
@@ -88,6 +88,8 @@ void line_cat(struct line *dest, const struct line *src) {
 	printf("%s(%p, %p)\n", __func__, dest, src);
 	printf("dest->last: %lu\n", dest->last);
 #endif
+	ASSERT(dest != NULL);
+	ASSERT(src != NULL);
 	Vec_char_delete(dest->vec, dest->last); /* delete '\0' */
 	Vec_char_cat(dest->vec, src->vec);
 	dest->last += (src->last - 1);
