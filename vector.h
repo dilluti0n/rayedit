@@ -72,6 +72,24 @@
 		memmove(curr + 1, curr, (v->size - index - 1) * sizeof(type)); \
 		*curr = elem;						\
 	}								\
+	/* insert src to dest from index */				\
+	static inline void name##_insert_vector(name *dest,		\
+						size_t index,		\
+						const name *src) {	\
+		ASSERT(index <= dest->size);				\
+		const size_t newsize = dest->size + src->size;		\
+		name##_grow_size(dest, newsize);			\
+		const type *to_insert = dest->data + index;		\
+		memmove(to_insert + src->size, to_insert,		\
+			(dest->size - index - 1) * sizeof((type)));	\
+		memcpy(dest->data + index, src->data,			\
+		       src->size * sizeof((type)));			\
+	}								\
+        static inline void name##_cat(name *dest, const name *src) {    \
+		const size_t newsize = dest->size + src->size;		\
+		name##_grow_size(dest, newsize);			\
+		memcpy(dest->data + dest->size, src->data);		\
+	}							        \
 	/* split from index and store it to *new */			\
 	static inline void name##_split(name *v, size_t index, name **new) { \
 		ASSERT(index < v->size);				\
