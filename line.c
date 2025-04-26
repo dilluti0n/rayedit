@@ -14,7 +14,8 @@ struct line {
 void line_init(struct line **lip) {
 	struct line *li = MemAlloc(sizeof(struct line));
 	Vec_char_init(&li->vec);
-	li->cursor = li->last = 0;
+	li->cursor = 0;
+	li->last = 0;
 	Vec_char_push(li->vec, '\0');
 	*lip = li;
 }
@@ -98,9 +99,14 @@ void line_cat(struct line *dest, const struct line *src) {
 #endif
 	ASSERT(dest != NULL);
 	ASSERT(src != NULL);
+	if (src->last == 0)
+		return;
 	Vec_char_delete(dest->vec, dest->last); /* delete '\0' */
 	Vec_char_cat(dest->vec, src->vec);
 	dest->last += src->last;
+#ifdef DEBUG
+	printf("updated: dest->last: %lu\n", dest->last);
+#endif
 }
 
 void line_free(struct line *li) {

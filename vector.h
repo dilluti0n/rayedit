@@ -103,9 +103,12 @@
 	}								\
 	static inline void name##_delete(name *v, size_t index) {	\
 		ASSERT(index < v->size);				\
+		ASSERT(v->size != 0);					\
 		type *to_delete = v->data + index;			\
 		type *to_move = v->data + index + 1;			\
-		memmove(to_delete, to_move, (v->size - index - 1) * sizeof(type)); \
+		size_t bytes = (v->size - index - 1) * sizeof(type);	\
+		if (bytes > 0)						\
+			memmove(to_delete, to_move, bytes);		\
 		v->size -= 1;						\
 	}								\
 	static inline void name##_deleten(name *v, size_t index, int n) { \

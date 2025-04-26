@@ -71,41 +71,38 @@ void eb_backspace(struct ed_buf *eb) {
 	printf("%s(%p)\n", __func__, eb);
 	printf("eb->cur_row %lu\n", eb->cur_row);
 #endif
-	struct line *curr_line = Vec_slinep_get(eb->line_vec, eb->cur_row);
+	struct line *curr = Vec_slinep_get(eb->line_vec, eb->cur_row);
 	if (eb->cur_col == 0) {	      /* backspace to upper line */
 		if (eb->cur_row == 0) /* nothing to remove */
 			return;
 
-		size_t upper_line_index = eb->cur_row - 1;
-		struct line *upper_line = Vec_slinep_get(eb->line_vec, upper_line_index);
+		size_t upper_index = eb->cur_row - 1;
+		struct line *upper = Vec_slinep_get(eb->line_vec, upper_index);
 
-		/* cat to upper line and delete curr if curr is null, cat is no needed*/
-		if (upper_line != NULL) {
-			if (curr_line != NULL && line_get_last(curr_line) != 0) {
-				line_cat(upper_line, curr_line);
+		/* cat to upper line and delete curr; if curr is null, cat and free are no needed */
+		if (upper != NULL) {
+			const size_t upper_last = line_get_last(upper);
+			if (curr != NULL && line_get_last(curr) > 0) {
+				line_cat(upper, curr);
+				line_free(curr);
 			}
-			eb->cur_col = line_get_last(upper_line);
 			Vec_slinep_delete(eb->line_vec, eb->cur_row);
-		}
-
-		/* upper line is NULL; just delete it! */
-		if (upper_line == NULL) {
+			eb->cur_col = upper_last;
+		} else { /* upper line is NULL; just delete it! */
+			Vec_slinep_delete(eb->line_vec, upper_index);
 			eb->cur_col = 0;
-			Vec_slinep_delete(eb->line_vec, upper_line_index);
 		}
 
-		/* update cursor to backspace'd line! */
 		--eb->cur_row;
-	} else {
-		line_delete(curr_line, --eb->cur_col);
+	} else {		/* backspace curr line */
+		line_delete(curr, --eb->cur_col);
 	}
 
 }
 
 void eb_newline(struct ed_buf *eb) {
-	/* TODO - bug when middle of line */
 	struct line *curr_line = Vec_slinep_get(eb->line_vec, eb->cur_row);
-	struct line *newline;
+	struct line *newline = NULL;
 
 	if (curr_line != NULL && eb->cur_col < line_get_last(curr_line)) {
 		line_set_cursor(curr_line, eb->cur_col); /* cache the cursor for upper line */
