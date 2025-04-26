@@ -42,7 +42,7 @@
 		MemFree(v->data);					\
 		v->data = nd;						\
 	}								\
-	static inline void name##_grow_size(name *v, size_t size) {	\
+	static inline void name##_grow_to_size(name *v, size_t size) {	\
 		if (size > v->size) {					\
 			while (size > v->capacity)			\
 				name##_grow(v);				\
@@ -63,11 +63,11 @@
 	}								\
 	static inline void name##_insert(name *v, size_t index, type elem) { \
 		if (index >= v->size) {					\
-			name##_grow_size(v, index + 1);			\
+			name##_grow_to_size(v, index + 1);			\
 			v->data[index] = elem;				\
 			return;						\
 		}							\
-		name##_grow_size(v, v->size + 1);			\
+		name##_grow_to_size(v, v->size + 1);			\
 		type *curr = v->data + index;				\
 		memmove(curr + 1, curr, (v->size - index - 1) * sizeof(type)); \
 		*curr = elem;						\
@@ -78,7 +78,7 @@
 						const name *src) {	\
 		ASSERT(index <= dest->size);				\
 		const size_t newsize = dest->size + src->size;		\
-		name##_grow_size(dest, newsize);			\
+		name##_grow_to_size(dest, newsize);			\
 		type *to_insert = dest->data + index;			\
 		memmove(to_insert + src->size, to_insert,		\
 			(dest->size - index - 1) * sizeof (type));	\
@@ -87,7 +87,7 @@
 	}								\
         static inline void name##_cat(name *dest, const name *src) {    \
 		const size_t newsize = dest->size + src->size;		\
-		name##_grow_size(dest, newsize);			\
+		name##_grow_to_size(dest, newsize);			\
 		memcpy(dest->data + dest->size, src->data, src->size);	\
 	}							        \
 	/* split from index and store it to *new */			\
