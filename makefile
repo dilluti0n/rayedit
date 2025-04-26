@@ -1,10 +1,10 @@
 TARGET=rayedit
 RAYLIB_PREFIX="./raylib-5.5_linux_amd64"
 CC=gcc
-CFLAGS=-Wall -Wextra -O0 -I${RAYLIB_PREFIX}/include -DMAIN_WINDOW_TITLE="\"${TARGET}\"" -ggdb
+CFLAGS=-Wall -Wextra -O0 -I${RAYLIB_PREFIX}/include -DMAIN_WINDOW_TITLE="\"${TARGET}\"" -ggdb -DDEBUG
 # LDFLAGS=-v
 LDLIBS=${RAYLIB_PREFIX}/lib/libraylib.a -lm
-OBJS=main.o line.o lines.o
+OBJS=main.o line.o
 
 .PHONY=clean all
 

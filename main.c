@@ -61,6 +61,9 @@ void eb_insert(struct ed_buf *eb, int ch) {
 	    (line = Vec_slinep_get(eb->line_vec, eb->cur_row)) == NULL) {
 		line_init(&line);
 		Vec_slinep_insert(eb->line_vec, eb->cur_row, line);
+#ifdef DEBUG
+		printf("new line %p allocated\n", line);
+#endif
 	}
 	line_insert(line, eb->cur_col++, ch);
 }
@@ -83,12 +86,27 @@ void eb_backspace(struct ed_buf *eb) {
 }
 
 void eb_newline(struct ed_buf *eb) {
-	assert("TODO - insert newline on middle or end of line" == 0);
-	struct line *curr = Vec_slinep_get(eb->line_vec, eb->cur_row);
-	if (curr != NULL) {	/* cache the cursor */
-		line_set_cursor(curr, eb->cur_col);
+	struct line *curr_line = Vec_slinep_get(eb->line_vec, eb->cur_row);
+	if (curr_line != NULL && eb->cur_row == line_get_last(curr_line)) {
+		line_set_cursor(curr_line, eb->cur_col); /* cache the cursor for upper line */
+		struct line *newline;
+		line_split(curr_line, eb->cur_col, &newline);
+		Vec_slinep_insert(eb->line_vec, eb->cur_row + 1, newline);
+		eb->cur_col = line_get_last(newline);
+	} else {
+		eb->cur_col = 0;
 	}
-	Vec_slinep_insert(eb->line_vec, eb->cur_row++, NULL);
+	eb->cur_row++;
+}
+
+struct line *eb_get_line(struct ed_buf *eb, size_t index) {
+	if (index >= Vec_slinep_len(eb->line_vec))
+		return NULL;
+	return Vec_slinep_get(eb->line_vec, index);
+}
+
+size_t eb_get_line_num(struct ed_buf *eb) {
+	return Vec_slinep_len(eb->line_vec);
 }
 
 void eb_free(struct ed_buf *eb) {
@@ -139,13 +157,9 @@ int main() {
 			/*	 (window_size.x - text_width) / 2, 0, */
 			/*	 font_size, BLACK); */
 			size_t i;
-			for (i = 0; i < Vec_slinep_len(eb->line_vec); i++) {
-				struct line *line = (eb->line_vec->data[i]);
-				char *to_draw;
-				if (line != NULL && line->vec != NULL)
-					to_draw = line->vec->data;
-				else
-					to_draw = "\n";
+			for (i = 0; i < eb_get_line_num(eb); i++) {
+				struct line *line = eb_get_line(eb, i);
+				const char *to_draw = (line != NULL)? line_get_string(line) : "\n";
 				DrawText(to_draw, 10, 10 + font_size * i,
 						 font_size, BLACK);
 			}
