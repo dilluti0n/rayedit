@@ -9,12 +9,6 @@
 
 #include "config.h"
 
-#ifdef DEBUG
-#include <stdlib.h>
-#define MemAlloc malloc
-#define MemFree free
-#endif
-
 #ifndef VECTOR_INIT_CAP
 #define VECTOR_INIT_CAP 64
 #endif

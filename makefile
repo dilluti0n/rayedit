@@ -4,7 +4,6 @@ CC=gcc
 CFLAGS=-Wall -Wextra -O0 -I${RAYLIB_PREFIX}/include -DMAIN_WINDOW_TITLE="\"${TARGET}\"" -ggdb -DDEBUG
 # LDFLAGS=-v
 LDLIBS=${RAYLIB_PREFIX}/lib/libraylib.a -lm
-OBJS=main.o line.o
 
 .PHONY=clean all
 
@@ -13,7 +12,10 @@ all: ${TARGET}
 ${TARGET}: ${OBJS}
 	${CC} ${LDFLAGS} -o ${TARGET} ${OBJS} ${LDLIBS}
 
-%.o: %.c %.h makefile
+main.o: main.c line.h config.h vector.h makefile
+	${CC} ${CFLAGS} -c $< -o $@
+
+line.o: line.c config.h raylin.h makefile
 	${CC} ${CFLAGS} -c $< -o $@
 
 .PHONY+=test

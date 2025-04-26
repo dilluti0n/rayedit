@@ -1,7 +1,7 @@
 #ifndef LINE_H
 #define LINE_H
 
-#include "vector.h"
+#include <stddef.h>
 
 struct line;
 

@@ -4,12 +4,8 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#ifdef DEBUG
-#define MemAlloc malloc
-#define MemFree free
-#endif
-
 #include "line.h"
+#include "config.h"
 
 #ifndef MAIN_WINDOW_TITLE
 #define MAIN_WINDOW_TITLE "window"
@@ -73,7 +69,7 @@ void eb_backspace(struct ed_buf *eb) {
 		if (eb->cur_row == 0) /* nothing to remove */
 			return;
 	size_t upper_line_index = eb->cur_row - 1;
-		struct line *upper_line = Vec_slinep_get(eb->line_vec, upper_line_index);
+	struct line *upper_line = Vec_slinep_get(eb->line_vec, upper_line_index);
 		if (upper_line != NULL)
 			line_free(upper_line);
 		Vec_slinep_delete(eb->line_vec, upper_line_index);

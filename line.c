@@ -1,3 +1,4 @@
+#include "vector.h"
 #include "config.h"
 #include "raylib.h"
 #include "line.h"
