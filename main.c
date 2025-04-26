@@ -46,6 +46,7 @@ void eb_init(struct ed_buf **eb) {
 	*eb = neb;
 }
 
+/* insert ch to cursor */
 void eb_insert(struct ed_buf *eb, int ch) {
 #ifdef DEBUG
 	assert(eb != NULL);
@@ -121,6 +122,14 @@ struct line *eb_get_line(struct ed_buf *eb, size_t index) {
 	return Vec_slinep_get(eb->line_vec, index);
 }
 
+size_t eb_get_cur_col(struct ed_buf *eb) {
+	return eb->cur_col;
+}
+
+size_t eb_get_cur_row(struct ed_buf *eb) {
+	return eb->cur_row;
+}
+
 size_t eb_get_line_num(struct ed_buf *eb) {
 	return Vec_slinep_len(eb->line_vec);
 }
@@ -174,10 +183,23 @@ int main() {
 			/*	 font_size, BLACK); */
 			size_t i;
 			for (i = 0; i < eb_get_line_num(eb); i++) {
+				/* TODO: cannot draw cursor if it is on non_allocated line */
 				struct line *line = eb_get_line(eb, i);
 				const char *to_draw = (line != NULL)? line_get_string(line) : "\n";
-				DrawText(to_draw, 10, 10 + font_size * i,
+
+				if (i != eb_get_cur_row(eb)) {
+					DrawText(to_draw, 10, 10 + font_size * i,
 						 font_size, BLACK);
+				} else { /* draw cursor */
+					char buf[4096];
+					size_t cur_col = eb_get_cur_col(eb);
+					strcpy(buf, to_draw);
+					if (buf[cur_col] == '\0')
+						buf[cur_col + 1] = '\0';
+					buf[cur_col] = '_';
+					DrawText(buf, 10, 10 + font_size * i,
+						 font_size, BLACK);
+				}
 			}
 			EndDrawing();
 		}
