@@ -66,10 +66,11 @@ void eb_insert(struct ed_buf *eb, int ch) {
 
 void eb_backspace(struct ed_buf *eb) {
 	if (eb->cur_col == 0) {	      /* backspace to upper line */
+		assert("TODO: backspace should insert current line to last of upper line" == 0);
 		if (eb->cur_row == 0) /* nothing to remove */
 			return;
-	size_t upper_line_index = eb->cur_row - 1;
-	struct line *upper_line = Vec_slinep_get(eb->line_vec, upper_line_index);
+		size_t upper_line_index = eb->cur_row - 1;
+		struct line *upper_line = Vec_slinep_get(eb->line_vec, upper_line_index);
 		if (upper_line != NULL)
 			line_free(upper_line);
 		Vec_slinep_delete(eb->line_vec, upper_line_index);
