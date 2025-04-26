@@ -88,7 +88,8 @@
         static inline void name##_cat(name *dest, const name *src) {    \
 		const size_t newsize = dest->size + src->size;		\
 		name##_grow_to_size(dest, newsize);			\
-		memcpy(dest->data + dest->size, src->data, src->size);	\
+		memcpy(dest->data + dest->size, src->data,		\
+		       src->size * sizeof (type));			\
 	}							        \
 	/* split from index and store it to *new */			\
 	static inline void name##_split(name *v, size_t index, name **new) { \
