@@ -32,6 +32,7 @@ void line_append(struct line *li, char c) {
 void line_delete(struct line *li, size_t pos) {
 	ASSERT(pos < li->last);
 	Vec_char_delete(li->vec, pos);
+	--li->last;
 }
 
 void line_delete_trailing(struct line *li) {
