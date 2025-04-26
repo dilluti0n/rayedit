@@ -92,7 +92,7 @@ void line_cat(struct line *dest, const struct line *src) {
 	ASSERT(src != NULL);
 	Vec_char_delete(dest->vec, dest->last); /* delete '\0' */
 	Vec_char_cat(dest->vec, src->vec);
-	dest->last += (src->last - 1);
+	dest->last += src->last;
 }
 
 void line_free(struct line *li) {
