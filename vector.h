@@ -7,6 +7,8 @@
 #include <raylib.h>	 /* MemAlloc, MemFree */
 #include <assert.h>
 
+#include "config.h"
+
 #ifdef DEBUG
 #include <stdlib.h>
 #define MemAlloc malloc
@@ -62,37 +64,42 @@
 		if (v->size > 0)					\
 			--v->size;					\
 	}								\
-	static inline void name##_set(name *v, size_t i, type elem){	\
-		v->data[i] = elem;					\
+	static inline void name##_set(name *v, size_t index, type elem){ \
+		v->data[index] = elem;					\
 	}								\
-	static inline void name##_insert(name *v, size_t i, type elem) { \
-		if (i > v->size) {					\
-			name##_grow_size(v, i + 1);			\
-			v->data[i] = elem;				\
-			return;						\
-		} else if (i == v->size) {				\
-			name##_push(v, elem);				\
+	static inline void name##_insert(name *v, size_t index, type elem) { \
+		if (index >= v->size) {					\
+			name##_grow_size(v, index + 1);			\
+			v->data[index] = elem;				\
 			return;						\
 		}							\
 		name##_grow_size(v, v->size + 1);			\
-		type *curr = v->data + i;				\
-		memmove(curr + 1, curr, (v->size - i - 1) * sizeof(type)); \
+		type *curr = v->data + index;				\
+		memmove(curr + 1, curr, (v->size - index - 1) * sizeof(type)); \
 		*curr = elem;						\
 	}								\
-	static inline void name##_delete(name *v, size_t i) {		\
-		type *to_delete = v->data + i;				\
-		type *to_move = v->data + i + 1;				\
-		memmove(to_delete, to_move, (v->size - i - 1) * sizeof(type)); \
+	/* split from index and store it to *new */			\
+	static inline void name##_split(name *v, size_t index, name **new) { \
+		ASSERT(index < v->size);				\
+		name##_init(new);					\
+		for (size_t i = index; i < v->size; i++)		\
+			name##_push(*new, v->data[i]);			\
+		v->size = index;					\
+	}								\
+	static inline void name##_delete(name *v, size_t index) {	\
+		type *to_delete = v->data + index;			\
+		type *to_move = v->data + index + 1;			\
+		memmove(to_delete, to_move, (v->size - index - 1) * sizeof(type)); \
 		v->size -= 1;						\
 	}								\
-	static inline void name##_deleten(name *v, size_t i, int n) {	\
-		type *to_delete = v->data + i;				\
-		type *to_move = v->data + i + n;			\
-		memmove(to_delete, to_move, (v->size - i - n) * sizeof(type)); \
+	static inline void name##_deleten(name *v, size_t index, int n) { \
+		type *to_delete = v->data + index;			\
+		type *to_move = v->data + index + n;			\
+		memmove(to_delete, to_move, (v->size - index - n) * sizeof(type)); \
 		v->size -= n;						\
 	}								\
-	static inline type name##_get(const name *v, size_t i) {	\
-		return v->data[i];					\
+	static inline type name##_get(const name *v, size_t index) {	\
+		return v->data[index];					\
 	}								\
 	static inline size_t name##_len(const name *v){			\
 		return v->size;						\
