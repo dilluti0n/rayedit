@@ -74,12 +74,23 @@ const char *line_get_string(struct line *li) {
 }
 
 void line_insert(struct line *li, size_t pos, char ch) {
+#ifdef DEBUG
+	printf("%s(%p, %lu, %c)\n", __func__, li, pos, ch);
+	printf("li->last: %lu\n", li->last);
+#endif
 	Vec_char_insert(li->vec, pos, ch);
 	li->last++;
 }
 
+/* NOTE this doesn't free src */
 void line_cat(struct line *dest, const struct line *src) {
-	assert("TODO" == 0);
+#ifdef DEBUG
+	printf("%s(%p, %p)\n", __func__, dest, src);
+	printf("dest->last: %lu\n", dest->last);
+#endif
+	Vec_char_delete(dest->vec, dest->last); /* delete '\0' */
+	Vec_char_cat(dest->vec, src->vec);
+	dest->last += (src->last - 1);
 }
 
 void line_free(struct line *li) {

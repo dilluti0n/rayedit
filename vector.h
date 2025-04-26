@@ -79,16 +79,16 @@
 		ASSERT(index <= dest->size);				\
 		const size_t newsize = dest->size + src->size;		\
 		name##_grow_size(dest, newsize);			\
-		const type *to_insert = dest->data + index;		\
+		type *to_insert = dest->data + index;			\
 		memmove(to_insert + src->size, to_insert,		\
-			(dest->size - index - 1) * sizeof((type)));	\
+			(dest->size - index - 1) * sizeof (type));	\
 		memcpy(dest->data + index, src->data,			\
-		       src->size * sizeof((type)));			\
+		       src->size * sizeof (type));			\
 	}								\
         static inline void name##_cat(name *dest, const name *src) {    \
 		const size_t newsize = dest->size + src->size;		\
 		name##_grow_size(dest, newsize);			\
-		memcpy(dest->data + dest->size, src->data);		\
+		memcpy(dest->data + dest->size, src->data, src->size);	\
 	}							        \
 	/* split from index and store it to *new */			\
 	static inline void name##_split(name *v, size_t index, name **new) { \
@@ -99,6 +99,7 @@
 		v->size = index;					\
 	}								\
 	static inline void name##_delete(name *v, size_t index) {	\
+		ASSERT(index < v->size);				\
 		type *to_delete = v->data + index;			\
 		type *to_move = v->data + index + 1;			\
 		memmove(to_delete, to_move, (v->size - index - 1) * sizeof(type)); \
