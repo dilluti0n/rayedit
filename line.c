@@ -67,8 +67,8 @@ void line_split(struct line *li, size_t pos, struct line **newlinep) {
 	struct line *newline = MemAlloc(sizeof(struct line));
 
 	newline->vec = newvec;
-	newline->cursor = newline->last = 0;
-	li->last = Vec_char_len(newvec) - 1; /* this should point '\0' */
+	newline->cursor = 0;
+	newline->last = Vec_char_len(newvec) - 1; /* this should point '\0' */
 	*newlinep = newline;
 }
 
