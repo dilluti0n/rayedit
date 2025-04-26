@@ -50,7 +50,7 @@ void eb_insert(struct ed_buf *eb, int ch) {
 #ifdef DEBUG
 	assert(eb != NULL);
 	printf("%s(%p, %c)\n", __func__, eb, ch);
-	printf("eb->cur_row %d\n", eb->cur_row);
+	printf("eb->cur_row %lu\n", eb->cur_row);
 #endif
 	struct line *line;
 	if (Vec_slinep_len(eb->line_vec) <= eb->cur_row ||
@@ -65,16 +65,36 @@ void eb_insert(struct ed_buf *eb, int ch) {
 }
 
 void eb_backspace(struct ed_buf *eb) {
+#ifdef DEBUG
+	assert(eb != NULL);
+	printf("%s(%p)\n", __func__, eb);
+	printf("eb->cur_row %lu\n", eb->cur_row);
+#endif
 	struct line *curr_line = Vec_slinep_get(eb->line_vec, eb->cur_row);
 	if (eb->cur_col == 0) {	      /* backspace to upper line */
 		if (eb->cur_row == 0) /* nothing to remove */
 			return;
+
 		size_t upper_line_index = eb->cur_row - 1;
 		struct line *upper_line = Vec_slinep_get(eb->line_vec, upper_line_index);
+
+		/* cat to upper line and delete curr if curr is null, cat is no needed*/
 		if (upper_line != NULL) {
-			line_cat(upper_line, curr_line);
+			if (curr_line != NULL && line_get_last(curr_line) != 0) {
+				line_cat(upper_line, curr_line);
+			}
+			eb->cur_col = line_get_last(upper_line);
+			Vec_slinep_delete(eb->line_vec, eb->cur_row);
 		}
-		Vec_slinep_delete(eb->line_vec, eb->cur_row--); /* delete current line */
+
+		/* upper line is NULL; just delete it! */
+		if (upper_line == NULL) {
+			eb->cur_col = 0;
+			Vec_slinep_delete(eb->line_vec, upper_line_index);
+		}
+
+		/* update cursor to backspace'd line! */
+		--eb->cur_row;
 	} else {
 		line_delete(curr_line, --eb->cur_col);
 	}
