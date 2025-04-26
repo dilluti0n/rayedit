@@ -103,6 +103,7 @@ void eb_backspace(struct ed_buf *eb) {
 }
 
 void eb_newline(struct ed_buf *eb) {
+	/* TODO - bug when middle of line */
 	struct line *curr_line = Vec_slinep_get(eb->line_vec, eb->cur_row);
 	struct line *newline;
 
@@ -112,13 +113,28 @@ void eb_newline(struct ed_buf *eb) {
 	} else {
 		line_init(&newline);
 	}
-	Vec_slinep_insert(eb->line_vec, eb->cur_row + 1, newline);
+	Vec_slinep_insert(eb->line_vec, ++eb->cur_row, newline);
 	eb->cur_col = 0;
-	eb->cur_row++;
 }
 
 struct line *eb_get_line(struct ed_buf *eb, size_t index) {
 	return Vec_slinep_get(eb->line_vec, index);
+}
+
+void eb_set_cur_back(struct ed_buf *eb) {
+	if (eb->cur_col > 0) {
+		--eb->cur_col;
+	} else if (eb->cur_row > 0) {
+		--eb->cur_row;
+		eb->cur_col = line_get_last(eb_get_line(eb, eb->cur_row));
+	}
+}
+
+void eb_set_cur_prev(struct ed_buf *eb) {
+	if (eb->cur_row > 0) {
+		struct line *prev = Vec_slinep_get(eb->line_vec, --eb->cur_row);
+		eb->cur_col = prev != NULL? line_get_cursor(prev) : 0;
+	}
 }
 
 size_t eb_get_cur_col(struct ed_buf *eb) {
@@ -169,6 +185,10 @@ int main() {
 			eb_newline(eb);
 		} else if (IsKeyPressed(KEY_BACKSPACE)) {
 			eb_backspace(eb);
+		} else if (IsKeyPressed(KEY_LEFT)) {
+			eb_set_cur_back(eb);
+		} else if (IsKeyPressed(KEY_UP)) {
+			eb_set_cur_prev(eb);
 		}
 
 		{

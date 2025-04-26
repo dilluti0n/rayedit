@@ -52,6 +52,10 @@ void line_set_cursor(struct line *li, size_t pos) {
 	li->cursor = pos;
 }
 
+size_t line_get_cursor(const struct line *li) {
+	return li->cursor;
+}
+
 size_t line_get_last(struct line *li) {
 	return li->last;
 }
