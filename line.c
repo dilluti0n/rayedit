@@ -57,11 +57,15 @@ size_t line_get_last(struct line *li) {
 }
 
 void line_split(struct line *li, size_t pos, struct line **newlinep) {
+	ASSERT(pos < li->last);
 	Vec_char *newvec = NULL;
+
 	Vec_char_split(li->vec, pos, &newvec);
 	Vec_char_push(li->vec, '\0'); /* this is inserted to pos */
 	li->last = pos;
+
 	struct line *newline = MemAlloc(sizeof(struct line));
+
 	newline->vec = newvec;
 	newline->cursor = newline->last = 0;
 	li->last = Vec_char_len(newvec) - 1; /* this should point '\0' */

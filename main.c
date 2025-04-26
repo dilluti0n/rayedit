@@ -104,21 +104,20 @@ void eb_backspace(struct ed_buf *eb) {
 
 void eb_newline(struct ed_buf *eb) {
 	struct line *curr_line = Vec_slinep_get(eb->line_vec, eb->cur_row);
-	if (curr_line != NULL && eb->cur_row == line_get_last(curr_line)) {
+	struct line *newline;
+
+	if (curr_line != NULL && eb->cur_col < line_get_last(curr_line)) {
 		line_set_cursor(curr_line, eb->cur_col); /* cache the cursor for upper line */
-		struct line *newline;
 		line_split(curr_line, eb->cur_col, &newline);
-		Vec_slinep_insert(eb->line_vec, eb->cur_row + 1, newline);
-		eb->cur_col = line_get_last(newline);
 	} else {
-		eb->cur_col = 0;
+		line_init(&newline);
 	}
+	Vec_slinep_insert(eb->line_vec, eb->cur_row + 1, newline);
+	eb->cur_col = 0;
 	eb->cur_row++;
 }
 
 struct line *eb_get_line(struct ed_buf *eb, size_t index) {
-	if (index >= Vec_slinep_len(eb->line_vec))
-		return NULL;
 	return Vec_slinep_get(eb->line_vec, index);
 }
 
