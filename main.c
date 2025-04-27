@@ -159,7 +159,12 @@ void eb_set_cur_back(struct ed_buf *eb) {
 }
 
 void eb_set_cur_next(struct ed_buf *eb) {
-	assert("TODO" == 0);
+	size_t eb_len = Vec_slinep_len(eb->line_vec);
+
+	if (eb->cur_row < eb_len) { /* able to allocate new line */
+		++eb->cur_row;
+		eb->cur_col = 0;
+	}
 }
 
 size_t eb_get_cur_col(struct ed_buf *eb) {
@@ -232,6 +237,7 @@ int main() {
 
 #ifdef DEBUG
 			printf("[draw]: %lu lines ------\n", eb_get_line_num(eb));
+			printf("[draw]: cursor: (%lu, %lu) ------\n", eb->cur_col, eb->cur_row);
 #endif
 			size_t i;
 			for (i = 0; i < eb_get_line_num(eb); i++) {
