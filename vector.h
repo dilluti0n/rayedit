@@ -25,7 +25,6 @@
 		nv->capacity = VECTOR_INIT_CAP;				\
 		const size_t to_alloc = nv->capacity * sizeof(type);	\
 		nv->data = MemAlloc(to_alloc);				\
-		memset(nv->data, 0, to_alloc);				\
 		*v = nv;						\
 	}								\
 	static inline void name##_free(name *v) {			\
@@ -33,19 +32,23 @@
 		MemFree(v);						\
 	}								\
 	static inline void name##_grow(name *v) {			\
-		assert(v->capacity < SIZE_MAX / 2);			\
-		v->capacity <<= 1;					\
+		ASSERT(v->capacity < SIZE_MAX / 2);			\
+									\
+		v->capacity *= 2;					\
+									\
 		const size_t to_alloc = v->capacity * sizeof(type);	\
 		type *nd = MemAlloc(to_alloc);				\
-		memset(nd, 0, to_alloc);				\
+									\
 		memcpy(nd, v->data, v->size * sizeof(type));		\
 		MemFree(v->data);					\
 		v->data = nd;						\
 	}								\
-	static inline void name##_grow_to_size(name *v, size_t size) {	\
+	static inline void name##_resize(name *v, size_t size) {	\
 		if (size > v->size) {					\
 			while (size > v->capacity)			\
 				name##_grow(v);				\
+			memset(v->data + v->size, 0,			\
+			       (size - v->size) * sizeof (type));	\
 		}							\
 		v->size = size;						\
 	}								\
@@ -63,14 +66,18 @@
 		v->data[index] = elem;					\
 	}								\
 	static inline void name##_insert(name *v, size_t index, type elem) { \
-		if (index >= v->size) {					\
-			name##_grow_to_size(v, index + 1);			\
+		const size_t oldsize = v->size;				\
+		if (index >= oldsize) {					\
+			name##_resize(v, index + 1);			\
 			v->data[index] = elem;				\
 			return;						\
 		}							\
-		name##_grow_to_size(v, v->size + 1);			\
+									\
+		name##_resize(v, oldsize + 1);				\
+									\
 		type *curr = v->data + index;				\
-		memmove(curr + 1, curr, (v->size - index - 1) * sizeof(type)); \
+		memmove(curr + 1, curr,					\
+			(oldsize - index) * sizeof(type));		\
 		*curr = elem;						\
 	}								\
 	/* insert src to dest from index */				\
@@ -78,18 +85,21 @@
 						size_t index,		\
 						const name *src) {	\
 		ASSERT(index <= dest->size);				\
-		const size_t newsize = dest->size + src->size;		\
-		name##_grow_to_size(dest, newsize);			\
+									\
+		const size_t oldsize = dest->size;			\
+									\
+		name##_resize(dest, oldsize + src->size);		\
+									\
 		type *to_insert = dest->data + index;			\
 		memmove(to_insert + src->size, to_insert,		\
-			(dest->size - index - 1) * sizeof (type));	\
-		memcpy(dest->data + index, src->data,			\
+			(oldsize - index) * sizeof (type));		\
+		memcpy(to_insert, src->data,				\
 		       src->size * sizeof (type));			\
 	}								\
         static inline void name##_cat(name *dest, const name *src) {    \
 		const size_t oldsize = dest->size;			\
 		const size_t newsize = oldsize + src->size;		\
-		name##_grow_to_size(dest, oldsize + src->size);		\
+		name##_resize(dest, oldsize + src->size);		\
 		memcpy(dest->data + oldsize, src->data,			\
 		       src->size * sizeof (type));			\
 		dest->size = newsize;					\
