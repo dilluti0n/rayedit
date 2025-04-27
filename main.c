@@ -123,12 +123,23 @@ struct line *eb_get_line(struct ed_buf *eb, size_t index) {
 	return Vec_slinep_get(eb->line_vec, index);
 }
 
-void eb_set_cur_back(struct ed_buf *eb) {
-	if (eb->cur_col > 0) {
-		--eb->cur_col;
-	} else if (eb->cur_row > 0) {
-		--eb->cur_row;
-		eb->cur_col = line_get_last(eb_get_line(eb, eb->cur_row));
+void eb_set_cur_forward(struct ed_buf *eb) {
+	struct line *curr = eb_get_line(eb, eb->cur_row);
+	const size_t eb_len = Vec_slinep_len(eb->line_vec);
+
+	if (curr == NULL) {
+		if (eb->cur_row < eb_len) {
+			++eb->cur_row;
+			eb->cur_col = 0;
+		}
+		return;
+	}
+
+	if (eb->cur_col + 1 < line_get_last(curr)) {
+		eb->cur_col++;
+	} else {
+		++eb->cur_row;
+		eb->cur_col = 0;
 	}
 }
 
@@ -137,6 +148,18 @@ void eb_set_cur_prev(struct ed_buf *eb) {
 		struct line *prev = Vec_slinep_get(eb->line_vec, --eb->cur_row);
 		eb->cur_col = prev != NULL? line_get_cursor(prev) : 0;
 	}
+}
+
+void eb_set_cur_back(struct ed_buf *eb) {
+	if (eb->cur_col > 0) {
+		--eb->cur_col;
+	} else if (eb->cur_row > 0) {
+		eb_set_cur_prev(eb);
+	}
+}
+
+void eb_set_cur_next(struct ed_buf *eb) {
+	assert("TODO" == 0);
 }
 
 size_t eb_get_cur_col(struct ed_buf *eb) {
@@ -191,6 +214,10 @@ int main() {
 			eb_set_cur_back(eb);
 		} else if (IsKeyPressed(KEY_UP)) {
 			eb_set_cur_prev(eb);
+		} else if (IsKeyPressed(KEY_RIGHT)) {
+			eb_set_cur_forward(eb);
+		} else if (IsKeyPressed(KEY_DOWN)) {
+			eb_set_cur_next(eb);
 		}
 
 		{
