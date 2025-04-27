@@ -18,6 +18,9 @@ void line_init(struct line **lip) {
 	li->last = 0;
 	Vec_char_push(li->vec, '\0');
 	*lip = li;
+#ifdef DEBUG
+	printf("new line %p allocated\n", li);
+#endif
 }
 
 void line_append(struct line *li, char c) {

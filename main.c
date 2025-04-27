@@ -48,6 +48,21 @@ void eb_init(struct ed_buf **eb) {
 	*eb = neb;
 }
 
+static inline struct line *ensure_line(struct ed_buf *eb, size_t row) {
+	if (row == Vec_slinep_len(eb->line_vec)) {
+		struct line *li;  line_init(&li);
+		Vec_slinep_push(eb->line_vec, li);
+		return li;
+	}
+
+	struct line *li = Vec_slinep_get(eb->line_vec, row);
+	if (li == NULL) {
+		line_init(&li);
+		Vec_slinep_set(eb->line_vec, row, li);
+	}
+	return li;
+}
+
 /* insert ch to cursor */
 void eb_insert(struct ed_buf *eb, int ch) {
 #ifdef DEBUG
@@ -55,18 +70,7 @@ void eb_insert(struct ed_buf *eb, int ch) {
 	printf("%s(%p, %c)\n", __func__, eb, ch);
 	printf("eb->cur_row %lu\n", eb->cur_row);
 #endif
-	struct line *line;
-	if (eb->cur_row == Vec_slinep_len(eb->line_vec) ||
-	    (line = Vec_slinep_get(eb->line_vec, eb->cur_row)) == NULL) {
-		line_init(&line);
-		if (Vec_slinep_len(eb->line_vec) == eb->cur_row)
-			Vec_slinep_push(eb->line_vec, line);
-		else
-			Vec_slinep_set(eb->line_vec, eb->cur_row, line);
-#ifdef DEBUG
-		printf("new line %p allocated\n", line);
-#endif
-	}
+	struct line *line = ensure_line(eb, eb->cur_row);
 	line_insert(line, eb->cur_col++, ch);
 }
 
