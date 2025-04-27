@@ -129,6 +129,7 @@
 		v->size -= n;						\
 	}								\
 	static inline type name##_get(const name *v, size_t index) {	\
+		ASSERT(index < v->size);				\
 		return v->data[index];					\
 	}								\
 	static inline size_t name##_len(const name *v){			\

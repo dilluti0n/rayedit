@@ -56,7 +56,8 @@ void eb_insert(struct ed_buf *eb, int ch) {
 	printf("eb->cur_row %lu\n", eb->cur_row);
 #endif
 	struct line *line;
-	if ((line = Vec_slinep_get(eb->line_vec, eb->cur_row)) == NULL) {
+	if (eb->cur_row == Vec_slinep_len(eb->line_vec) ||
+	    (line = Vec_slinep_get(eb->line_vec, eb->cur_row)) == NULL) {
 		line_init(&line);
 		if (Vec_slinep_len(eb->line_vec) == eb->cur_row)
 			Vec_slinep_push(eb->line_vec, line);
