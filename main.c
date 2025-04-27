@@ -41,7 +41,9 @@ void eb_init(struct ed_buf **eb) {
 	struct ed_buf *neb = MemAlloc(sizeof(struct ed_buf));
 
 	Vec_slinep_init(&neb->line_vec);
-	neb->cur_row = neb->cur_col = neb->scroll_row = 0;
+	neb->cur_row = 0;
+	neb->cur_col = 0;
+	neb->scroll_row = 0;
 
 	*eb = neb;
 }
@@ -108,8 +110,9 @@ void eb_newline(struct ed_buf *eb) {
 		line_set_cursor(curr_line, eb->cur_col); /* cache the cursor for upper line */
 		line_split(curr_line, eb->cur_col, &newline);
 	} else {
-		line_init(&newline);
+		newline = NULL;
 	}
+
 	Vec_slinep_insert(eb->line_vec, ++eb->cur_row, newline);
 	eb->cur_col = 0;
 }
