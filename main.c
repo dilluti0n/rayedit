@@ -56,10 +56,12 @@ void eb_insert(struct ed_buf *eb, int ch) {
 	printf("eb->cur_row %lu\n", eb->cur_row);
 #endif
 	struct line *line;
-	if (Vec_slinep_len(eb->line_vec) <= eb->cur_row ||
-	    (line = Vec_slinep_get(eb->line_vec, eb->cur_row)) == NULL) {
+	if ((line = Vec_slinep_get(eb->line_vec, eb->cur_row)) == NULL) {
 		line_init(&line);
-		Vec_slinep_insert(eb->line_vec, eb->cur_row, line);
+		if (Vec_slinep_len(eb->line_vec) == eb->cur_row)
+			Vec_slinep_push(eb->line_vec, line);
+		else
+			Vec_slinep_set(eb->line_vec, eb->cur_row, line);
 #ifdef DEBUG
 		printf("new line %p allocated\n", line);
 #endif
@@ -200,12 +202,18 @@ int main() {
 			/* DrawText(lineh->vec->data, */
 			/*	 (window_size.x - text_width) / 2, 0, */
 			/*	 font_size, BLACK); */
+
+#ifdef DEBUG
+			printf("[draw]: %lu lines ------\n", eb_get_line_num(eb));
+#endif
 			size_t i;
 			for (i = 0; i < eb_get_line_num(eb); i++) {
 				/* TODO: cannot draw cursor if it is on non_allocated line */
 				struct line *line = eb_get_line(eb, i);
 				const char *to_draw = (line != NULL)? line_get_string(line) : "\n";
-
+#ifdef DEBUG
+				printf("[draw]: line %lu = %p\n", i, line);
+#endif
 				if (i != eb_get_cur_row(eb)) {
 					DrawText(to_draw, 10, 10 + font_size * i,
 						 font_size, BLACK);

@@ -59,6 +59,7 @@
 			--v->size;					\
 	}								\
 	static inline void name##_set(name *v, size_t index, type elem){ \
+		ASSERT(index < v->size);				\
 		v->data[index] = elem;					\
 	}								\
 	static inline void name##_insert(name *v, size_t index, type elem) { \
