@@ -4,7 +4,7 @@ CC=gcc
 CFLAGS=-Wall -Wextra -O0 -I${RAYLIB_PREFIX}/include -DMAIN_WINDOW_TITLE="\"${TARGET}\""
 # LDFLAGS=-v
 LDLIBS=${RAYLIB_PREFIX}/lib/libraylib.a -lm
-OBJS = main.o line.o
+OBJS = main.o line.o editor.o
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -DDEBUG -ggdb
@@ -17,10 +17,13 @@ all: ${TARGET}
 ${TARGET}: ${OBJS}
 	${CC} ${LDFLAGS} -o ${TARGET} ${OBJS} ${LDLIBS}
 
-main.o: main.c line.h config.h vector.h makefile
+main.o: main.c line.h config.h vector.h editor.h makefile
 	${CC} ${CFLAGS} -c $< -o $@
 
 line.o: line.c config.h makefile
+	${CC} ${CFLAGS} -c $< -o $@
+
+editor.o: editor.c line.h makefile
 	${CC} ${CFLAGS} -c $< -o $@
 
 .PHONY+=test
