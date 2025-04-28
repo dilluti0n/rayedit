@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "editor.h"
 #include "line.h"
 #include "vector.h"
@@ -11,6 +13,7 @@ struct ed_buf {
 	size_t cur_row;
 	size_t cur_col;
 	size_t scroll_row;
+	const char *file_name;
 };
 
 void eb_init(struct ed_buf **eb) {
@@ -162,6 +165,18 @@ size_t eb_get_cur_row(struct ed_buf *eb) {
 
 size_t eb_get_line_num(struct ed_buf *eb) {
 	return Vec_slinep_len(eb->line_vec);
+}
+
+void eb_bind(struct ed_buf *eb, const char *path) {
+	eb->file_name = path;
+}
+
+void eb_load_file(struct ed_buf *eb) {
+	assert("TODO" == 0);
+}
+
+void eb_save_file(struct ed_buf *eb) {
+	assert("TODO" == 0);
 }
 
 void eb_free(struct ed_buf *eb) {

@@ -31,6 +31,11 @@ void CustomLogCallback(int logLevel, const char *text, va_list args) {
 }
 
 int main(int argc, char *argv[]) {
+
+	if (argc != 2) {
+		return 1;
+	}
+
 	SetTraceLogCallback(CustomLogCallback);
 	InitWindow(window_size.x, window_size.y, MAIN_WINDOW_TITLE);
 	SetWindowState(FLAG_WINDOW_RESIZABLE);
@@ -38,6 +43,8 @@ int main(int argc, char *argv[]) {
 
 	struct ed_buf *eb;
 	eb_init(&eb);
+	eb_bind(eb, argv[1]);
+	eb_load_file(eb);
 
 	while (!WindowShouldClose()) {
 		if (IsWindowResized()) {
@@ -63,6 +70,12 @@ int main(int argc, char *argv[]) {
 			eb_set_cur_forward(eb);
 		} else if (IsKeyPressed(KEY_DOWN)) {
 			eb_set_cur_next(eb);
+		}
+
+		if (IsKeyPressed(KEY_LEFT_CONTROL) ||
+		    IsKeyPressed(KEY_RIGHT_CONTROL)) {
+			if (IsKeyPressed(KEY_S))
+				eb_save_file(eb);
 		}
 
 		{
