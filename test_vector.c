@@ -160,9 +160,13 @@ Test(vector_suite, insert_vector) {
 	   1) Insert at the front
 	   ---------------------------------------------------------- */
 	/* dest = {1,2,3} */
-	APPEND(dest, 1); APPEND(dest, 2); APPEND(dest, 3);
+	APPEND(dest, 1);
+	APPEND(dest, 2);
+	APPEND(dest, 3);
+
 	/* src  = {4,5}   */
-	APPEND(src, 4);  APPEND(src, 5);
+	APPEND(src, 4);
+	APPEND(src, 5);
 
 	Vec_test_insert_vector(dest, 0, src);          /* {4,5,1,2,3} */
 
@@ -175,13 +179,16 @@ Test(vector_suite, insert_vector) {
 	/* ------------------------------------------------------------
 	   2) Insert in the middle
 	   ---------------------------------------------------------- */
-	Vec_test_clear(dest);          /* reset to empty: implementation-specific */
-	APPEND(dest, 1); APPEND(dest, 2); APPEND(dest, 3);       /* {1,2,3} */
+	Vec_test_clear(dest);
+	APPEND(dest, 1);
+	APPEND(dest, 2);
+	APPEND(dest, 3); /* {1,2,3} */
 
 	Vec_test_clear(src);
-	APPEND(src, 7);  APPEND(src, 8);                          /* {7,8}   */
+	APPEND(src, 7);
+	APPEND(src, 8); /* {7,8}   */
 
-	Vec_test_insert_vector(dest, 1, src);          /* {1,7,8,2,3} */
+	Vec_test_insert_vector(dest, 1, src); /* {1,7,8,2,3} */
 
 	cr_assert_eq(Vec_test_len(dest), 5);
 	int expected2[5] = {1,7,8,2,3};
@@ -193,7 +200,9 @@ Test(vector_suite, insert_vector) {
 	   3) Insert at the end  (index == dest->size)
 	   ---------------------------------------------------------- */
 	Vec_test_clear(dest);          /* dest = {1,2,3} again */
-	APPEND(dest, 1); APPEND(dest, 2); APPEND(dest, 3);
+	APPEND(dest, 1);
+	APPEND(dest, 2);
+	APPEND(dest, 3);
 
 	Vec_test_clear(src);           /* src = {9} */
 	APPEND(src, 9);
@@ -225,11 +234,14 @@ Test(vector_suite, cat) {
 	/* ------------------------------------------------------------
 	   1) Concatenate non-empty src onto empty dest
 	   ---------------------------------------------------------- */
-	APPEND(b, 1);  APPEND(b, 2);  APPEND(b, 3);     /* b = {1,2,3} */
+	APPEND(b, 1);
+	APPEND(b, 2);
+	APPEND(b, 3);     /* b = {1,2,3} */
 
 	Vec_test_cat(a, b);                              /* a = {1,2,3} */
 
 	cr_assert_eq(Vec_test_len(a), 3, "dest size should be 3");
+
 	for (size_t i = 0; i < 3; ++i)
 		cr_assert_eq(Vec_test_get(a, i), i + 1, "mismatch after first cat @%zu", i);
 
@@ -258,7 +270,8 @@ Test(vector_suite, cat) {
 	   ---------------------------------------------------------- */
 	/* a = {1,2,3}; b = {4,5} */
 	Vec_test_clear(b);           /* reuse b */
-	APPEND(b, 4); APPEND(b, 5);
+	APPEND(b, 4);
+	APPEND(b, 5);
 
 	Vec_test_cat(a, b);                              /* a = {1,2,3,4,5} */
 
@@ -387,12 +400,14 @@ Test(vector_suite, delete_range) {
 	Vec_test_init(&v);
 
 	/* v = {1,2,3,4,5,6} */
-	for (int i = 1; i <= 6; ++i)  APPEND(v, i);
+	for (int i = 1; i <= 6; ++i)
+		APPEND(v, i);
 
 	/* ---- 1) Remove a block in the middle: index 2, n = 3 ---- */
 	Vec_test_deleten(v, 2, 3);                /* {1,2,6} */
 	cr_assert_eq(Vec_test_len(v), 3);
 	int exp_mid[3] = {1,2,6};
+
 	for (size_t i = 0; i < 3; ++i)
 		cr_assert_eq(Vec_test_get(v, i), exp_mid[i],
 			     "Mismatch after deleting mid-range @%zu", i);
