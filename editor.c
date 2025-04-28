@@ -229,8 +229,13 @@ void eb_load_file(struct ed_buf *eb) {
 		const char *tmp = memchr(start, '\n', end - start);
 		const char *newline = tmp == NULL? end : tmp;
 
+		/* handling CRLF */
+		size_t len = (size_t)(newline - start);
+		if (len > 0 && start[len - 1] == '\r')
+			len--;
+
 		struct line *li;
-		line_init_from_buf(&li, start, newline - start);
+		line_init_from_buf(&li, start, len);
 		Vec_slinep_push(eb->line_vec, li);
 
 		start = newline + 1;
