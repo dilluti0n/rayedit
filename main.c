@@ -52,30 +52,30 @@ int main(int argc, char *argv[]) {
 			window_size.y = GetScreenHeight();
 		}
 
-		{
-			int c;
-			while ((c = GetCharPressed()))
-				eb_insert(eb, c);
-		}
-
 		if (IsKeyPressed(KEY_ENTER)) {
 			eb_newline(eb);
 		} else if (IsKeyPressed(KEY_BACKSPACE)) {
 			eb_backspace(eb);
 		} else if (IsKeyPressed(KEY_LEFT)) {
-			eb_set_cur_back(eb);
+			eb_set_cur_backward(eb);
 		} else if (IsKeyPressed(KEY_UP)) {
-			eb_set_cur_prev(eb);
+			eb_set_cur_prev_line(eb);
 		} else if (IsKeyPressed(KEY_RIGHT)) {
 			eb_set_cur_forward(eb);
 		} else if (IsKeyPressed(KEY_DOWN)) {
-			eb_set_cur_next(eb);
+			eb_set_cur_next_line(eb);
 		}
 
-		if (IsKeyPressed(KEY_LEFT_CONTROL) ||
-		    IsKeyPressed(KEY_RIGHT_CONTROL)) {
-			if (IsKeyPressed(KEY_S))
-				eb_save_file(eb);
+		if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) {
+			printf("pressed: C-s\n");
+			eb_save_file(eb);
+		}
+
+		{
+			int c;
+			while ((c = GetCharPressed())) {
+				eb_insert(eb, c);
+			}
 		}
 
 		{
