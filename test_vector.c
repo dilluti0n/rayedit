@@ -210,5 +210,71 @@ Test(vector_suite, insert_vector) {
 	Vec_test_free(src);
 	Vec_test_free(dest);
 }
-#undef APPEND
 
+/* --------------------------------------------------------------------
+   Suite : vector_suite
+   Case  : cat   (concatenate two vectors)
+   ------------------------------------------------------------------ */
+Test(vector_suite, cat) {
+
+	Vec_test *a;   /* destination (“dest”) */
+	Vec_test *b;   /* source      (“src”)  */
+	Vec_test_init(&a);
+	Vec_test_init(&b);
+
+	/* ------------------------------------------------------------
+	   1) Concatenate non-empty src onto empty dest
+	   ---------------------------------------------------------- */
+	APPEND(b, 1);  APPEND(b, 2);  APPEND(b, 3);     /* b = {1,2,3} */
+
+	Vec_test_cat(a, b);                              /* a = {1,2,3} */
+
+	cr_assert_eq(Vec_test_len(a), 3, "dest size should be 3");
+	for (size_t i = 0; i < 3; ++i)
+		cr_assert_eq(Vec_test_get(a, i), i + 1, "mismatch after first cat @%zu", i);
+
+	/* src must remain intact */
+	cr_assert_eq(Vec_test_len(b), 3);
+	for (size_t i = 0; i < 3; ++i)
+		cr_assert_eq(Vec_test_get(b, i), i + 1);
+
+	/* ------------------------------------------------------------
+	   2) Concatenate empty src onto non-empty dest (no-op)
+	   ---------------------------------------------------------- */
+	Vec_test *empty;
+	Vec_test_init(&empty);                           /* empty vector */
+
+	Vec_test_cat(a, empty);                          /* should do nothing */
+
+	cr_assert_eq(Vec_test_len(a), 3, "cat with empty src should not change dest");
+	int exp_after_noop[3] = {1, 2, 3};
+	for (size_t i = 0; i < 3; ++i)
+		cr_assert_eq(Vec_test_get(a, i), exp_after_noop[i]);
+
+	Vec_test_free(empty);
+
+	/* ------------------------------------------------------------
+	   3) Concatenate two non-empty vectors
+	   ---------------------------------------------------------- */
+	/* a = {1,2,3}; b = {4,5} */
+	Vec_test_clear(b);           /* reuse b */
+	APPEND(b, 4); APPEND(b, 5);
+
+	Vec_test_cat(a, b);                              /* a = {1,2,3,4,5} */
+
+	cr_assert_eq(Vec_test_len(a), 5, "dest size should be 5 after second cat");
+	int expected_final[5] = {1, 2, 3, 4, 5};
+	for (size_t i = 0; i < 5; ++i)
+		cr_assert_eq(Vec_test_get(a, i), expected_final[i],
+			     "mismatch after second cat @%zu", i);
+
+	/* src still intact */
+	cr_assert_eq(Vec_test_len(b), 2);
+	cr_assert_eq(Vec_test_get(b, 0), 4);
+	cr_assert_eq(Vec_test_get(b, 1), 5);
+
+	/* -------------- tear-down ---------------------------------------- */
+	Vec_test_free(b);
+	Vec_test_free(a);
+}
+#undef APPEND
