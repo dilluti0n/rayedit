@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <raylib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -49,13 +50,15 @@ void eb_init(struct ed_buf **eb) {
 }
 
 static inline struct line *ensure_line(struct ed_buf *eb, size_t row) {
+	ASSERT(row <= Vec_slinep_len(eb->line_vec));
+	struct line *li;
 	if (row == Vec_slinep_len(eb->line_vec)) {
-		struct line *li;  line_init(&li);
+		line_init(&li);
 		Vec_slinep_push(eb->line_vec, li);
 		return li;
 	}
 
-	struct line *li = Vec_slinep_get(eb->line_vec, row);
+	li = Vec_slinep_get(eb->line_vec, row);
 	if (li == NULL) {
 		line_init(&li);
 		Vec_slinep_set(eb->line_vec, row, li);
@@ -125,34 +128,22 @@ void eb_newline(struct ed_buf *eb) {
 }
 
 struct line *eb_get_line(struct ed_buf *eb, size_t index) {
+	if (index == Vec_slinep_len(eb->line_vec))
+		return NULL;
 	return Vec_slinep_get(eb->line_vec, index);
-}
-
-void eb_set_cur_forward(struct ed_buf *eb) {
-	struct line *curr = eb_get_line(eb, eb->cur_row);
-	const size_t eb_len = Vec_slinep_len(eb->line_vec);
-
-	if (curr == NULL) {
-		if (eb->cur_row < eb_len) {
-			++eb->cur_row;
-			eb->cur_col = 0;
-		}
-		return;
-	}
-
-	if (eb->cur_col + 1 < line_get_last(curr)) {
-		eb->cur_col++;
-	} else {
-		++eb->cur_row;
-		eb->cur_col = 0;
-	}
 }
 
 void eb_set_cur_prev(struct ed_buf *eb) {
 	if (eb->cur_row > 0) {
-		struct line *prev = Vec_slinep_get(eb->line_vec, --eb->cur_row);
+		struct line *prev = eb_get_line(eb, --eb->cur_row);
 		eb->cur_col = prev != NULL? line_get_cursor(prev) : 0;
 	}
+}
+
+static inline size_t eb_get_last(struct ed_buf *eb, size_t col) {
+	struct line *li = eb_get_line(eb, col);
+
+	return li != NULL? line_get_last(li) : 0;
 }
 
 void eb_set_cur_back(struct ed_buf *eb) {
@@ -160,7 +151,15 @@ void eb_set_cur_back(struct ed_buf *eb) {
 		--eb->cur_col;
 	} else if (eb->cur_row > 0) {
 		eb_set_cur_prev(eb);
+		eb->cur_col = eb_get_last(eb, eb->cur_row);
 	}
+}
+
+static inline bool is_cur_col_last(struct ed_buf *eb) {
+	struct line *li = eb_get_line(eb, eb->cur_row);
+	if (li == NULL)
+		return true;
+	return eb->cur_col == line_get_last(li);
 }
 
 void eb_set_cur_next(struct ed_buf *eb) {
@@ -169,6 +168,14 @@ void eb_set_cur_next(struct ed_buf *eb) {
 	if (eb->cur_row < eb_len) { /* able to allocate new line */
 		++eb->cur_row;
 		eb->cur_col = 0;
+	}
+}
+
+void eb_set_cur_forward(struct ed_buf *eb) {
+	if (is_cur_col_last(eb)) {
+		eb_set_cur_next(eb);
+	} else {
+		++eb->cur_col;
 	}
 }
 
