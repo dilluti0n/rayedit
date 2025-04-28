@@ -277,4 +277,68 @@ Test(vector_suite, cat) {
 	Vec_test_free(b);
 	Vec_test_free(a);
 }
+
+/* --------------------------------------------------------------------
+   Suite : vector_suite
+   Case  : split   (split a vector at a given index)
+   ------------------------------------------------------------------ */
+Test(vector_suite, split) {
+	Vec_test *orig;
+	Vec_test *tail;          /* will receive the right-hand side */
+	Vec_test_init(&orig);
+
+	/* orig = {1,2,3,4,5} */
+	for (int i = 1; i <= 5; ++i)
+		APPEND(orig, i);
+
+	/* ------------------------------ split in the middle -------------- */
+	Vec_test_split(orig, 2, &tail);   /* index 2 → elements 0-1 left, 2-4 right */
+
+	/* left-hand (orig) should now contain {1,2} */
+	cr_assert_eq(Vec_test_len(orig), 2, "orig size after split should be 2");
+	cr_assert_eq(Vec_test_get(orig, 0), 1);
+	cr_assert_eq(Vec_test_get(orig, 1), 2);
+
+	/* right-hand (tail) should contain {3,4,5} */
+	cr_assert_eq(Vec_test_len(tail), 3, "tail size should be 3");
+	int expected_tail[3] = {3,4,5};
+	for (size_t i = 0; i < 3; ++i)
+		cr_assert_eq(Vec_test_get(tail, i), expected_tail[i],
+			     "tail mismatch at index %zu", i);
+
+	Vec_test_free(tail);
+
+	/* ------------------------------ split at index 0 ------------------ */
+	Vec_test_clear(orig);                 /* reset orig to {1,2,3,4,5} */
+	for (int i = 1; i <= 5; ++i)
+		APPEND(orig, i);
+
+	Vec_test_split(orig, 0, &tail);       /* everything moves to tail */
+
+	cr_assert_eq(Vec_test_len(orig), 0, "orig should be empty after split at 0");
+	cr_assert_eq(Vec_test_len(tail), 5);
+	for (size_t i = 0; i < 5; ++i)
+		cr_assert_eq(Vec_test_get(tail, i), i + 1,
+			     "tail mismatch after split-0 @%zu", i);
+
+	Vec_test_free(tail);
+
+	/* ------------------------------ split at last valid index --------- */
+	Vec_test_clear(orig);                 /* reset orig to {1,2,3} */
+	for (int i = 1; i <= 3; ++i)
+		APPEND(orig, i);
+
+	Vec_test_split(orig, 2, &tail);       /* moves only the last element */
+
+	cr_assert_eq(Vec_test_len(orig), 2);
+	cr_assert_eq(Vec_test_get(orig, 0), 1);
+	cr_assert_eq(Vec_test_get(orig, 1), 2);
+
+	cr_assert_eq(Vec_test_len(tail), 1);
+	cr_assert_eq(Vec_test_get(tail, 0), 3);
+
+	/* -------------- tear-down ---------------------------------------- */
+	Vec_test_free(tail);
+	Vec_test_free(orig);
+}
 #undef APPEND
