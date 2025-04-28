@@ -142,3 +142,73 @@ Test(vector_suite, insert) {
 
 	Vec_test_free(v);
 }
+
+/*  --------------------------------------------------------------------
+    Suite: vector_suite
+    Case : insert_vector
+    ------------------------------------------------------------------ */
+#define APPEND(v, value)  Vec_test_insert((v), Vec_test_len(v), (value))
+Test(vector_suite, insert_vector) {
+	/* helper that appends one element (index == current size) */
+
+	/* ---------- set-up ------------------------------------------------ */
+	Vec_test *dest, *src;
+	Vec_test_init(&dest);
+	Vec_test_init(&src);
+
+	/* ------------------------------------------------------------
+	   1) Insert at the front
+	   ---------------------------------------------------------- */
+	/* dest = {1,2,3} */
+	APPEND(dest, 1); APPEND(dest, 2); APPEND(dest, 3);
+	/* src  = {4,5}   */
+	APPEND(src, 4);  APPEND(src, 5);
+
+	Vec_test_insert_vector(dest, 0, src);          /* {4,5,1,2,3} */
+
+	cr_assert_eq(Vec_test_len(dest), 5);
+	int expected1[5] = {4,5,1,2,3};
+	for (size_t i = 0; i < 5; ++i)
+		cr_assert_eq(Vec_test_get(dest, i), expected1[i],
+			     "Front-insert: mismatch at index %zu", i);
+
+	/* ------------------------------------------------------------
+	   2) Insert in the middle
+	   ---------------------------------------------------------- */
+	Vec_test_clear(dest);          /* reset to empty: implementation-specific */
+	APPEND(dest, 1); APPEND(dest, 2); APPEND(dest, 3);       /* {1,2,3} */
+
+	Vec_test_clear(src);
+	APPEND(src, 7);  APPEND(src, 8);                          /* {7,8}   */
+
+	Vec_test_insert_vector(dest, 1, src);          /* {1,7,8,2,3} */
+
+	cr_assert_eq(Vec_test_len(dest), 5);
+	int expected2[5] = {1,7,8,2,3};
+	for (size_t i = 0; i < 5; ++i)
+		cr_assert_eq(Vec_test_get(dest, i), expected2[i],
+			     "Mid-insert: mismatch at index %zu", i);
+
+	/* ------------------------------------------------------------
+	   3) Insert at the end  (index == dest->size)
+	   ---------------------------------------------------------- */
+	Vec_test_clear(dest);          /* dest = {1,2,3} again */
+	APPEND(dest, 1); APPEND(dest, 2); APPEND(dest, 3);
+
+	Vec_test_clear(src);           /* src = {9} */
+	APPEND(src, 9);
+
+	Vec_test_insert_vector(dest, Vec_test_len(dest), src);   /* {1,2,3,9} */
+
+	cr_assert_eq(Vec_test_len(dest), 4);
+	int expected3[4] = {1,2,3,9};
+	for (size_t i = 0; i < 4; ++i)
+		cr_assert_eq(Vec_test_get(dest, i), expected3[i],
+			     "End-insert: mismatch at index %zu", i);
+
+	/* ---------- tear-down -------------------------------------------- */
+	Vec_test_free(src);
+	Vec_test_free(dest);
+}
+#undef APPEND
+
