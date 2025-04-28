@@ -7,3 +7,4 @@ unittest
 compile_commands.json
 .cache/*
 .clang-format
+red
