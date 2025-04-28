@@ -341,4 +341,72 @@ Test(vector_suite, split) {
 	Vec_test_free(tail);
 	Vec_test_free(orig);
 }
+
+/* =========================================================
+   Suite : vector_suite
+   Case  : delete_single
+   --------------------------------------------------------- */
+Test(vector_suite, delete_single) {
+	Vec_test *v;
+	Vec_test_init(&v);
+
+	/* v = {1,2,3,4,5} */
+	for (int i = 1; i <= 5; ++i)  APPEND(v, i);
+
+	/* ---- 1) Delete a middle element (index 2) --------------- */
+	Vec_test_delete(v, 2);                     /* {1,2,4,5} */
+	cr_assert_eq(Vec_test_len(v), 4);
+	int exp_mid[4] = {1,2,4,5};
+	for (size_t i = 0; i < 4; ++i)
+		cr_assert_eq(Vec_test_get(v, i), exp_mid[i],
+			     "Mismatch after deleting middle element @%zu", i);
+
+	/* ---- 2) Delete the first element ------------------------ */
+	Vec_test_delete(v, 0);                     /* {2,4,5} */
+	cr_assert_eq(Vec_test_len(v), 3);
+	int exp_front[3] = {2,4,5};
+	for (size_t i = 0; i < 3; ++i)
+		cr_assert_eq(Vec_test_get(v, i), exp_front[i],
+			     "Mismatch after deleting first element @%zu", i);
+
+	/* ---- 3) Delete the last element ------------------------- */
+	Vec_test_delete(v, Vec_test_len(v) - 1);   /* {2,4} */
+	cr_assert_eq(Vec_test_len(v), 2);
+	cr_assert_eq(Vec_test_get(v, 0), 2);
+	cr_assert_eq(Vec_test_get(v, 1), 4);
+
+	Vec_test_free(v);
+}
+
+/* =========================================================
+   Suite : vector_suite
+   Case  : delete_range
+   --------------------------------------------------------- */
+Test(vector_suite, delete_range) {
+	Vec_test *v;
+	Vec_test_init(&v);
+
+	/* v = {1,2,3,4,5,6} */
+	for (int i = 1; i <= 6; ++i)  APPEND(v, i);
+
+	/* ---- 1) Remove a block in the middle: index 2, n = 3 ---- */
+	Vec_test_deleten(v, 2, 3);                /* {1,2,6} */
+	cr_assert_eq(Vec_test_len(v), 3);
+	int exp_mid[3] = {1,2,6};
+	for (size_t i = 0; i < 3; ++i)
+		cr_assert_eq(Vec_test_get(v, i), exp_mid[i],
+			     "Mismatch after deleting mid-range @%zu", i);
+
+	/* ---- 2) Remove first two elements: index 0, n = 2 -------- */
+	Vec_test_deleten(v, 0, 2);                /* {6} */
+	cr_assert_eq(Vec_test_len(v), 1);
+	cr_assert_eq(Vec_test_get(v, 0), 6);
+
+	/* ---- 3) Remove the last (and only) element: index 0, n = 1 */
+	Vec_test_deleten(v, 0, 1);                /* {} */
+	cr_assert_eq(Vec_test_len(v), 0,
+                     "Vector should be empty after deleting final element");
+
+	Vec_test_free(v);
+}
 #undef APPEND
