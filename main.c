@@ -66,8 +66,9 @@ int main(int argc, char *argv[]) {
 			eb_set_cur_next_line(eb);
 		}
 
-		if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) {
-			eb_save_file(eb);
+		if (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) {
+			if (IsKeyPressed(KEY_S))
+				eb_save_file(eb);
 		}
 
 		{
