@@ -90,6 +90,7 @@ void line_insert(struct line *li, size_t pos, char ch) {
 	printf("%s(%p, %lu, %c)\n", __func__, li, pos, ch);
 	printf("li->last: %lu\n", li->last);
 #endif
+	ASSERT(pos <= li->last);
 	Vec_char_insert(li->vec, pos, ch);
 	li->last++;
 }
