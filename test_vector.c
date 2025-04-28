@@ -109,3 +109,36 @@ Test(vector_suite, pop) {
 
 	Vec_test_free(v);
 }
+
+Test(vector_suite, insert) {
+	Vec_test *v;
+	Vec_test_init(&v);
+
+	/* --- 1) Insert into an empty vector --------------------------------- */
+	Vec_test_insert(v, 0, 10);
+	cr_assert_eq(Vec_test_len(v), 1, "Vector size should be 1 after first insert");
+	cr_assert_eq(Vec_test_get(v, 0), 10, "Inserted element should be 10");
+
+	/* --- 2) Insert at the beginning and check shifting ------------------ */
+	Vec_test_insert(v, 0, 20);  /* Expected: {20,10} */
+	cr_assert_eq(Vec_test_len(v), 2, "Vector size should be 2 after inserting at the beginning");
+	cr_assert_eq(Vec_test_get(v, 0), 20, "First element should be 20 after shifting");
+	cr_assert_eq(Vec_test_get(v, 1), 10, "Second element should be 10 after shifting");
+
+	/* --- 3) Insert in the middle ---------------------------------------- */
+	Vec_test_insert(v, 1, 30);  /* Expected: {20,30,10} */
+	cr_assert_eq(Vec_test_len(v), 3, "Vector size should be 3 after inserting in the middle");
+	cr_assert_eq(Vec_test_get(v, 0), 20);
+	cr_assert_eq(Vec_test_get(v, 1), 30);
+	cr_assert_eq(Vec_test_get(v, 2), 10);
+
+	/* --- 4) Insert beyond the current size (sparse insert) -------------- */
+	Vec_test_insert(v, 10, 40); /* Expected: {20,30,10,0,0,0,0,0,0,0,40} */
+	cr_assert_eq(Vec_test_len(v), 11, "Vector size should be 11 after sparse insert");
+	/* Elements between old size and new index should be zero-filled */
+	for (size_t i = 3; i < 10; ++i)
+		cr_assert_eq(Vec_test_get(v, i), 0, "Gap at index %zu should be zero-filled", i);
+	cr_assert_eq(Vec_test_get(v, 10), 40, "Inserted element at index 10 should be 40");
+
+	Vec_test_free(v);
+}
