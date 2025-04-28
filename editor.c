@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
 #include "editor.h"
 #include "line.h"
 #include "vector.h"
@@ -189,7 +194,45 @@ void eb_bind(struct ed_buf *eb, const char *path) {
 }
 
 void eb_load_file(struct ed_buf *eb) {
-	;
+	if (eb->file_name == NULL)
+		return;
+
+	int fd = open(eb->file_name, O_RDONLY);
+	if (fd == -1) {
+		perror("open: ");
+		return;
+	}
+	struct stat statbuf = {};
+	if (fstat(fd, &statbuf) == -1) {
+		close(fd);		/* TODO; EINTER */
+		perror("fstat: ");
+		return;
+	}
+
+	const size_t filesize = statbuf.st_size;
+	if (filesize == 0) {
+		close(fd);
+		return;
+	}
+	const char *raw = mmap(NULL, filesize,
+			       PROT_READ, MAP_PRIVATE, fd, 0);
+	close(fd);
+	if (raw == MAP_FAILED) {
+		perror("mmap: ");
+		return;
+	}
+
+	for (size_t i = 0; i < filesize; i++) {
+		int ch;
+		if ((ch = raw[i]) == '\n') {
+			eb_newline(eb);
+		} else {
+			eb_insert(eb, ch);
+		}
+	}
+	munmap((void *)raw, filesize);
+	eb->cur_col = 0;
+	eb->cur_row = 0;
 }
 
 void eb_save_file(struct ed_buf *eb) {
@@ -197,6 +240,11 @@ void eb_save_file(struct ed_buf *eb) {
 		return;
 
 	FILE *fp = fopen(eb->file_name, "w");
+	if (fp == NULL) {
+		perror("fopen: ");
+		return;
+	}
+
 	const size_t vec_len = Vec_slinep_len(eb->line_vec);
 
 	for (size_t i = 0; i < vec_len; i++) {
