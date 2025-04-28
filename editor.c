@@ -169,7 +169,7 @@ void eb_free(struct ed_buf *eb) {
 	for (size_t i = 0; i < Vec_slinep_len(eb->line_vec); i++) {
 		struct line *curr;
 		if ((curr = Vec_slinep_get(eb->line_vec, i)) != NULL)
-			MemFree(curr);
+			line_free(curr);
 	}
 	Vec_slinep_free(eb->line_vec);
 	MemFree(eb);
