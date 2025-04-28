@@ -1,3 +1,0 @@
-- Choose either Criterion or Unity as the testing framework and add a make test target to the build system. - DONE
-- Write an initial TDD (Test-Driven Development) set for vector and line. - DONE
-- As implement new Editorbuffer API, write corresponding unit tests.
