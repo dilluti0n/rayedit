@@ -23,6 +23,19 @@ void line_init(struct line **lip) {
 #endif
 }
 
+void line_init_from_buf(struct line **lip, const char *buf, size_t len) {
+	struct line *li;
+	line_init(&li);
+
+	Vec_char_resize(li->vec, len + 1);
+
+	memcpy(li->vec->data, buf, len);
+	li->vec->data[len] = '\0';
+
+	li->last = len;
+	*lip = li;
+}
+
 void line_append(struct line *li, char c) {
 	if (Vec_char_len(li->vec) > 0) {
 		Vec_char_set(li->vec, li->last++, c);

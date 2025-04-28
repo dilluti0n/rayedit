@@ -227,16 +227,13 @@ void eb_load_file(struct ed_buf *eb) {
 
 	while (start < end) {
 		const char *tmp = memchr(start, '\n', end - start);
-		const char *line_end = tmp == NULL? end : tmp;
+		const char *newline = tmp == NULL? end : tmp;
 
 		struct line *li;
-		line_init(&li);
-
-		for (const char *p = start; p < line_end; ++p)
-			line_append(li, *p);
+		line_init_from_buf(&li, start, newline - start);
 		Vec_slinep_push(eb->line_vec, li);
 
-		start = line_end + 1;
+		start = newline + 1;
 	}
 
 	munmap((void *)raw, filesize);
