@@ -44,7 +44,8 @@ Test(line_suite, init_and_empty) {
   2) Append characters and check null-termination & last index
   --------------------------------------------------------------------*/
 Test(line_suite, append) {
-	struct line *li;  line_init(&li);
+	struct line *li;
+	line_init(&li);
 
 	const char *text = "abc";
 	for (const char *p = text; *p; ++p)
@@ -60,7 +61,9 @@ Test(line_suite, append) {
   3) Insert a character in the middle
   --------------------------------------------------------------------*/
 Test(line_suite, insert_middle) {
-	struct line *li;  line_init(&li);
+	struct line *li;
+	line_init(&li);
+
 	line_append(li, 'a');
 	line_append(li, 'c');                 /* string now "ac" */
 
@@ -76,7 +79,9 @@ Test(line_suite, insert_middle) {
   4) Delete a character at given position
   --------------------------------------------------------------------*/
 Test(line_suite, delete_at_pos) {
-	struct line *li;  line_init(&li);
+	struct line *li;
+	line_init(&li);
+
 	for (char ch = 'a'; ch <= 'e'; ++ch) line_append(li, ch);   /* abcde */
 
 	line_delete(li, 2);   /* remove 'c'  → "abde" */
@@ -90,7 +95,9 @@ Test(line_suite, delete_at_pos) {
   5) Delete trailing character (backspace at end)
   --------------------------------------------------------------------*/
 Test(line_suite, delete_trailing) {
-	struct line *li;  line_init(&li);
+	struct line *li;
+	line_init(&li);
+
 	line_append(li, 'x');
 	line_append(li, 'y');
 
@@ -105,7 +112,9 @@ Test(line_suite, delete_trailing) {
   6) Clear line contents
   --------------------------------------------------------------------*/
 Test(line_suite, clear) {
-	struct line *li;  line_init(&li);
+	struct line *li;
+	line_init(&li);
+
 	line_append(li, 'Z');
 
 	line_clear(li);
@@ -121,8 +130,10 @@ Test(line_suite, clear) {
 Test(line_suite, split) {
 	struct line *li, *tail;
 	line_init(&li);
+
 	const char *w = "hello";
-	for (const char *p = w; *p; ++p) line_append(li, *p);   /* "hello" */
+	for (const char *p = w; *p; ++p)
+		line_append(li, *p);   /* "hello" */
 
 	line_split(li, 2, &tail);   /* "he" + "llo" */
 
@@ -141,10 +152,13 @@ Test(line_suite, split) {
   --------------------------------------------------------------------*/
 Test(line_suite, cat) {
 	struct line *a, *b;
-	line_init(&a);  line_init(&b);
+	line_init(&a);
+	line_init(&b);
 
-	for (const char *p = "abc"; *p; ++p) line_append(a, *p);
-	for (const char *p = "def"; *p; ++p) line_append(b, *p);
+	for (const char *p = "abc"; *p; ++p)
+		line_append(a, *p);
+	for (const char *p = "def"; *p; ++p)
+		line_append(b, *p);
 
 	line_cat(a, b);                  /* "abcdef" */
 
@@ -158,4 +172,3 @@ Test(line_suite, cat) {
 	line_free(b);
 	line_free(a);
 }
-
