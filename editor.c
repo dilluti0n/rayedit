@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <assert.h>
 
 #include "editor.h"
@@ -25,6 +26,16 @@ void eb_init(struct ed_buf **eb) {
 	neb->scroll_row = 0;
 
 	*eb = neb;
+}
+
+void eb_free(struct ed_buf *eb) {
+	for (size_t i = 0; i < Vec_slinep_len(eb->line_vec); i++) {
+		struct line *curr;
+		if ((curr = Vec_slinep_get(eb->line_vec, i)) != NULL)
+			line_free(curr);
+	}
+	Vec_slinep_free(eb->line_vec);
+	MemFree(eb);
 }
 
 static inline struct line *ensure_line(struct ed_buf *eb, size_t row) {
@@ -172,19 +183,22 @@ void eb_bind(struct ed_buf *eb, const char *path) {
 }
 
 void eb_load_file(struct ed_buf *eb) {
-	assert("TODO" == 0);
+	;
 }
 
 void eb_save_file(struct ed_buf *eb) {
-	assert("TODO" == 0);
-}
+	if (eb->file_name == NULL)
+		return;
 
-void eb_free(struct ed_buf *eb) {
-	for (size_t i = 0; i < Vec_slinep_len(eb->line_vec); i++) {
-		struct line *curr;
-		if ((curr = Vec_slinep_get(eb->line_vec, i)) != NULL)
-			line_free(curr);
+	FILE *fp = fopen(eb->file_name, "w");
+	const size_t vec_len = Vec_slinep_len(eb->line_vec);
+
+	for (size_t i = 0; i < vec_len; i++) {
+		struct line *li = Vec_slinep_get(eb->line_vec, i);
+		const char *str = li == NULL? "\0" : line_get_string(li);
+
+		fprintf(fp, str);
+		fprintf(fp, "\n");
 	}
-	Vec_slinep_free(eb->line_vec);
-	MemFree(eb);
+	fclose(fp);
 }
