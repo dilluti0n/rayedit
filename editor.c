@@ -204,18 +204,18 @@ void eb_load_file(struct ed_buf *eb) {
 	}
 	struct stat statbuf = {};
 	if (fstat(fd, &statbuf) == -1) {
-		close(fd);		/* TODO; EINTER */
+		close(fd);
 		perror("fstat: ");
 		return;
 	}
 
-	const size_t filesize = statbuf.st_size;
+	const off_t filesize = statbuf.st_size;
 	if (filesize == 0) {
 		close(fd);
 		return;
 	}
-	const char *raw = mmap(NULL, filesize,
-			       PROT_READ, MAP_PRIVATE, fd, 0);
+	const char *raw = mmap(NULL, filesize, PROT_READ,
+			       MAP_PRIVATE, fd, 0);
 	close(fd);
 	if (raw == MAP_FAILED) {
 		perror("mmap: ");
@@ -226,18 +226,17 @@ void eb_load_file(struct ed_buf *eb) {
 	const char *end = raw + filesize;
 
 	while (start < end) {
-		const char *newline = memchr(start, '\n', end - start);
+		const char *tmp = memchr(start, '\n', end - start);
+		const char *line_end = tmp == NULL? end : tmp;
 
-		if (newline == NULL) { /* last line */
-			for (const char *p = start; p < end; ++p)
-				eb_insert(eb, *p);
-			break;
-		}
+		struct line *li;
+		line_init(&li);
 
-		for (const char *p = start; p < newline; ++p)
-			eb_insert(eb, *p);
-		eb_newline(eb);
-		start = newline + 1;
+		for (const char *p = start; p < line_end; ++p)
+			line_append(li, *p);
+		Vec_slinep_push(eb->line_vec, li);
+
+		start = line_end + 1;
 	}
 
 	munmap((void *)raw, filesize);
