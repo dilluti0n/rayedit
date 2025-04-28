@@ -27,6 +27,10 @@
 		nv->data = MemAlloc(to_alloc);				\
 		*v = nv;						\
 	}								\
+	static inline void name##_clear(name *v) {			\
+		/* TODO - optimize */					\
+		v->size = 0;						\
+	}								\
 	static inline void name##_free(name *v) {			\
 		MemFree(v->data);					\
 		MemFree(v);						\
