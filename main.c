@@ -67,7 +67,6 @@ int main(int argc, char *argv[]) {
 		}
 
 		if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) {
-			printf("pressed: C-s\n");
 			eb_save_file(eb);
 		}
 
