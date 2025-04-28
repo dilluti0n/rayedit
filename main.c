@@ -245,7 +245,7 @@ int main() {
 			printf("[draw]: cursor: (%lu, %lu) ------\n", eb->cur_col, eb->cur_row);
 #endif
 			size_t i;
-			for (i = 0; i < eb_get_line_num(eb); i++) {
+			for (i = 0; i <= eb_get_line_num(eb); i++) {
 				/* TODO: cannot draw cursor if it is on non_allocated line */
 				struct line *line = eb_get_line(eb, i);
 				const char *to_draw = (line != NULL)? line_get_string(line) : "\n";
