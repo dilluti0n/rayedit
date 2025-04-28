@@ -66,31 +66,37 @@ void eb_insert(struct ed_buf *eb, int ch) {
 	line_insert(line, eb->cur_col++, ch);
 }
 
+void eb_delete_line(struct ed_buf *eb, size_t pos) {
+	ASSERT(pos <= Vec_slinep_len(eb->line_vec));
+	if (pos < Vec_slinep_len(eb->line_vec))
+		Vec_slinep_delete(eb->line_vec, pos);
+}
+
 void eb_backspace(struct ed_buf *eb) {
 #ifdef DEBUG
 	assert(eb != NULL);
 	printf("%s(%p)\n", __func__, eb);
 	printf("eb->cur_row %lu\n", eb->cur_row);
 #endif
-	struct line *curr = Vec_slinep_get(eb->line_vec, eb->cur_row);
+	struct line *curr = eb_get_line(eb, eb->cur_row);
 	if (eb->cur_col == 0) {	      /* backspace to upper line */
 		if (eb->cur_row == 0) /* nothing to remove */
 			return;
 
 		size_t upper_index = eb->cur_row - 1;
-		struct line *upper = Vec_slinep_get(eb->line_vec, upper_index);
+		struct line *upper = eb_get_line(eb, upper_index);
 
 		/* cat to upper line and delete curr; if curr is null, cat and free are no needed */
 		if (upper != NULL) {
 			const size_t upper_last = line_get_last(upper);
-			if (curr != NULL && line_get_last(curr) > 0) {
+			if (line_get_last(curr) > 0) {
 				line_cat(upper, curr);
 				line_free(curr);
 			}
-			Vec_slinep_delete(eb->line_vec, eb->cur_row);
+			eb_delete_line(eb, eb->cur_row);
 			eb->cur_col = upper_last;
 		} else { /* upper line is NULL; just delete it! */
-			Vec_slinep_delete(eb->line_vec, upper_index);
+			eb_delete_line(eb, eb->cur_row);
 			eb->cur_col = 0;
 		}
 
@@ -101,8 +107,14 @@ void eb_backspace(struct ed_buf *eb) {
 
 }
 
+struct line *eb_get_line(struct ed_buf *eb, size_t index) {
+	if (index == Vec_slinep_len(eb->line_vec))
+		return NULL;
+	return Vec_slinep_get(eb->line_vec, index);
+}
+
 void eb_newline(struct ed_buf *eb) {
-	struct line *curr_line = Vec_slinep_get(eb->line_vec, eb->cur_row);
+	struct line *curr_line = eb_get_line(eb, eb->cur_row);
 	struct line *newline = NULL;
 
 	if (curr_line != NULL && eb->cur_col < line_get_last(curr_line)) {
@@ -116,13 +128,7 @@ void eb_newline(struct ed_buf *eb) {
 	eb->cur_col = 0;
 }
 
-struct line *eb_get_line(struct ed_buf *eb, size_t index) {
-	if (index == Vec_slinep_len(eb->line_vec))
-		return NULL;
-	return Vec_slinep_get(eb->line_vec, index);
-}
-
-void eb_set_cur_prev(struct ed_buf *eb) {
+void eb_set_cur_prev_line(struct ed_buf *eb) {
 	if (eb->cur_row > 0) {
 		struct line *prev = eb_get_line(eb, --eb->cur_row);
 		eb->cur_col = prev != NULL? line_get_cursor(prev) : 0;
@@ -135,11 +141,11 @@ static inline size_t eb_get_last(struct ed_buf *eb, size_t col) {
 	return li != NULL? line_get_last(li) : 0;
 }
 
-void eb_set_cur_back(struct ed_buf *eb) {
+void eb_set_cur_backward(struct ed_buf *eb) {
 	if (eb->cur_col > 0) {
 		--eb->cur_col;
 	} else if (eb->cur_row > 0) {
-		eb_set_cur_prev(eb);
+		eb_set_cur_prev_line(eb);
 		eb->cur_col = eb_get_last(eb, eb->cur_row);
 	}
 }
@@ -151,7 +157,7 @@ static inline bool is_cur_col_last(struct ed_buf *eb) {
 	return eb->cur_col == line_get_last(li);
 }
 
-void eb_set_cur_next(struct ed_buf *eb) {
+void eb_set_cur_next_line(struct ed_buf *eb) {
 	if (eb->cur_row < eb_get_line_num(eb)) {
 		struct line *next = eb_get_line(eb, ++eb->cur_row);
 		eb->cur_col = next != NULL? line_get_cursor(next) : 0;
@@ -160,7 +166,7 @@ void eb_set_cur_next(struct ed_buf *eb) {
 
 void eb_set_cur_forward(struct ed_buf *eb) {
 	if (is_cur_col_last(eb)) {
-		eb_set_cur_next(eb);
+		eb_set_cur_next_line(eb);
 	} else {
 		++eb->cur_col;
 	}
