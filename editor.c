@@ -222,14 +222,24 @@ void eb_load_file(struct ed_buf *eb) {
 		return;
 	}
 
-	for (size_t i = 0; i < filesize; i++) {
-		int ch;
-		if ((ch = raw[i]) == '\n') {
-			eb_newline(eb);
-		} else {
-			eb_insert(eb, ch);
+	const char *start = raw;
+	const char *end = raw + filesize;
+
+	while (start < end) {
+		const char *newline = memchr(start, '\n', end - start);
+
+		if (newline == NULL) { /* last line */
+			for (const char *p = start; p < end; ++p)
+				eb_insert(eb, *p);
+			break;
 		}
+
+		for (const char *p = start; p < newline; ++p)
+			eb_insert(eb, *p);
+		eb_newline(eb);
+		start = newline + 1;
 	}
+
 	munmap((void *)raw, filesize);
 	eb->cur_col = 0;
 	eb->cur_row = 0;
