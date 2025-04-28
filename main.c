@@ -30,7 +30,7 @@ void CustomLogCallback(int logLevel, const char *text, va_list args) {
 	fprintf(out, "\n");
 }
 
-int main() {
+int main(int argc, char *argv[]) {
 	SetTraceLogCallback(CustomLogCallback);
 	InitWindow(window_size.x, window_size.y, MAIN_WINDOW_TITLE);
 	SetWindowState(FLAG_WINDOW_RESIZABLE);
@@ -47,9 +47,8 @@ int main() {
 
 		{
 			int c;
-			while ((c = GetCharPressed())) {
+			while ((c = GetCharPressed()))
 				eb_insert(eb, c);
-			}
 		}
 
 		if (IsKeyPressed(KEY_ENTER)) {

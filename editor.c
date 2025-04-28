@@ -1,3 +1,4 @@
+#include "editor.h"
 #include "line.h"
 #include "vector.h"
 
@@ -137,11 +138,9 @@ static inline bool is_cur_col_last(struct ed_buf *eb) {
 }
 
 void eb_set_cur_next(struct ed_buf *eb) {
-	size_t eb_len = Vec_slinep_len(eb->line_vec);
-
-	if (eb->cur_row < eb_len) { /* able to allocate new line */
-		++eb->cur_row;
-		eb->cur_col = 0;
+	if (eb->cur_row < eb_get_line_num(eb)) {
+		struct line *next = eb_get_line(eb, ++eb->cur_row);
+		eb->cur_col = next != NULL? line_get_cursor(next) : 0;
 	}
 }
 
