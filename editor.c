@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -259,9 +260,20 @@ void eb_save_file(struct ed_buf *eb) {
 	if (eb->file_name == NULL)
 		return;
 
-	FILE *fp = fopen(eb->file_name, "w");
+	char tmp_path[1024];
+	snprintf(tmp_path, sizeof(tmp_path), "%s.tmpXXXXXX", eb->file_name);
+
+	int tmp_fd = mkstemp(tmp_path);
+	if (tmp_fd == -1) {
+		perror("mktemp: ");
+		return;
+	}
+
+	FILE *fp = fdopen(tmp_fd, "w");
 	if (fp == NULL) {
-		perror("fopen: ");
+		perror("fdopen: ");
+		close(tmp_fd);
+		unlink(tmp_path);
 		return;
 	}
 
@@ -271,8 +283,12 @@ void eb_save_file(struct ed_buf *eb) {
 		struct line *li = Vec_slinep_get(eb->line_vec, i);
 		const char *str = li == NULL? "\0" : line_get_string(li);
 
-		fprintf(fp, "%s", str);
-		fprintf(fp, "\n");
+		fprintf(fp, "%s\n", str);
 	}
 	fclose(fp);
+
+	if (rename(tmp_path, eb->file_name) == -1) {
+		perror("rename: ");
+		unlink(tmp_path);
+	}
 }
