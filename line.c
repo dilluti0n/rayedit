@@ -92,7 +92,7 @@ void line_append(struct line *li, char c) {
 }
 
 /* return index of '\0' */
-size_t line_get_last(struct line *li) {
+size_t line_get_last(const struct line *li) {
 	if (li->is_lazy)
 		return li->origin_len;
 	return li == NULL? 0 : Vec_char_len(li->vec) - 1;
@@ -154,14 +154,15 @@ void line_cat(struct line *dest, const struct line *src) {
 	ASSERT(dest != NULL);
 	ASSERT(src != NULL);
 
-	edit_happen(dest);
+	if (line_get_last(src) == 0)
+		return; 	/* trivial cat */
 
-	if (Vec_char_len(src->vec) == 1)
-		return;
+	edit_happen(dest);
 
 	size_t dest_last = Vec_char_len(dest->vec) - 1;
 
 	Vec_char_delete(dest->vec, dest_last); /* delete '\0' */
+
 	if (src->is_lazy)
 		Vec_char_cat_raw(dest->vec, src->origin, src->origin_len);
 	else
@@ -169,7 +170,10 @@ void line_cat(struct line *dest, const struct line *src) {
 }
 
 void line_free(struct line *li) {
-	if (li != NULL)
+	ASSERT(li != NULL);
+	if (!li->is_lazy) {
+		ASSERT(li->vec != NULL);
 		Vec_char_free(li->vec);
+	}
 	MemFree(li);
 }
