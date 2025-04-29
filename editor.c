@@ -50,6 +50,12 @@ void eb_free(struct ed_buf *eb) {
 	MemFree(eb);
 }
 
+static inline struct line *eb_get_line(struct ed_buf *eb, size_t index) {
+	if (index == Vec_slinep_len(eb->line_vec))
+		return NULL;
+	return Vec_slinep_get(eb->line_vec, index);
+}
+
 static inline struct line *ensure_line(struct ed_buf *eb, size_t row) {
 	ASSERT(row <= Vec_slinep_len(eb->line_vec));
 	struct line *li;
@@ -113,12 +119,6 @@ void eb_backspace(struct ed_buf *eb) {
 		line_delete(curr, --eb->cur_col);
 	}
 
-}
-
-struct line *eb_get_line(struct ed_buf *eb, size_t index) {
-	if (index == Vec_slinep_len(eb->line_vec))
-		return NULL;
-	return Vec_slinep_get(eb->line_vec, index);
 }
 
 void eb_newline(struct ed_buf *eb) {
@@ -190,6 +190,11 @@ size_t eb_get_cur_row(struct ed_buf *eb) {
 
 size_t eb_get_line_num(struct ed_buf *eb) {
 	return Vec_slinep_len(eb->line_vec);
+}
+
+const char *eb_get_line_string(struct ed_buf *eb, size_t pos) {
+	struct line *li = eb_get_line(eb, pos);
+	return li == NULL? "" : line_get_string(li);
 }
 
 void eb_bind(struct ed_buf *eb, const char *path) {

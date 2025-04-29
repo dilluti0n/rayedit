@@ -6,7 +6,6 @@
 #include <stdlib.h>
 
 #include "editor.h"
-#include "line.h"
 #include "config.h"
 
 #include <string.h>
@@ -100,10 +99,9 @@ int main(int argc, char *argv[]) {
 
 			for (size_t i = 0; i <= linenum_to_draw; i++) {
 				/* TODO: cannot draw cursor if it is on non_allocated line */
-				struct line *line = eb_get_line(eb, i);
-				const char *to_draw = (line != NULL)? line_get_string(line) : "\n";
+				const char *to_draw = eb_get_line_string(eb, i);
 #ifdef DEBUG
-				printf("[draw]: line %lu = %p\n", i, line);
+				printf("[draw]: line %lu\n", i);
 #endif
 				if (i != eb_get_cur_row(eb)) {
 					DrawText(to_draw, 10, 10 + font_size * i,

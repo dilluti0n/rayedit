@@ -19,7 +19,7 @@ void eb_set_cur_next_line(struct ed_buf *eb);
 void eb_set_cur_forward(struct ed_buf *eb);
 
 /* get */
-struct line *eb_get_line(struct ed_buf *eb, size_t index);
+const char *eb_get_line_string(struct ed_buf *eb, size_t index);
 size_t eb_get_cur_col(struct ed_buf *eb);
 size_t eb_get_cur_row(struct ed_buf *eb);
 size_t eb_get_line_num(struct ed_buf *eb);
