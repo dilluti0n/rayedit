@@ -32,7 +32,7 @@ void CustomLogCallback(int logLevel, const char *text, va_list args) {
 }
 
 static inline void draw_text_slice(int x, int y, int size, Color c,
-				   const struct slice sl) {
+			    const struct slice sl) {
 	char line[4096];
 	size_t len;
 	if ((len = sl.len) > sizeof (line) - 1)
@@ -122,7 +122,7 @@ int main(int argc, char *argv[]) {
 				} else { /* draw cursor */
 					char buf[4096];
 					size_t cur_col = eb_get_cur_col(eb);
-					strncpy(buf, sl.ptr, sl.len);
+					strncpy(buf, sl.ptr == NULL? "" : sl.ptr, sl.len);
 					if (sl.len < 4096)
 						buf[sl.len] = '\0';
 					if (buf[cur_col] == '\0')
