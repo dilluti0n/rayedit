@@ -51,7 +51,7 @@ void eb_free(struct ed_buf *eb) {
 	MemFree(eb);
 }
 
-static inline struct line *eb_get_line(struct ed_buf *eb, size_t index) {
+static inline struct line *eb_get_line(const struct ed_buf *eb, size_t index) {
 	if (index == Vec_slinep_len(eb->line_vec))
 		return NULL;
 	return Vec_slinep_get(eb->line_vec, index);
@@ -196,6 +196,16 @@ size_t eb_get_line_num(struct ed_buf *eb) {
 const char *eb_get_line_string(struct ed_buf *eb, size_t pos) {
 	struct line *li = eb_get_line(eb, pos);
 	return li == NULL? "" : line_get_string(li);
+}
+
+void eb_get_line_slice(const struct ed_buf *eb, size_t pos, struct slice *sl) {
+	struct line *li = eb_get_line(eb, pos);
+	if (li == NULL) {
+		sl->ptr = NULL;
+		sl->len = 0;
+	} else {
+		line_get_slice(li, sl);
+	}
 }
 
 void eb_bind(struct ed_buf *eb, const char *path) {
