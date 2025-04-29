@@ -2,26 +2,22 @@
 #include <criterion/assert.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "vector.h"
 
 DEFINE_VECTOR(Vec_char, char);
 
 struct line {
-	Vec_char *vec;		/* always allocated; initial state is ['\0'] */
+	Vec_char *vec;	    /* could be NULL */
+	const char *origin;	/* original line pointer from eb_load_file */
+	size_t origin_len;
         size_t cursor;          /* cache used to callback last position */
-        size_t last;            /* always pointing first '\0' */
+
+	unsigned is_lazy : 1;
 };
 
 #include "line.h"
-
-/*─────────────────────────────────────────────────────────────
-  file: test_line.c
-  build: cc -DTEST -DDEBUG -lcriterion -lraylib … test_line.c
-  ─────────────────────────────────────────────────────────────*/
-
-#include <string.h>
-#include "line.h"        /* brings in vector.h via line.h   */
 
 #define STR(li)   line_get_string(li)   /* shorthand        */
 
@@ -154,4 +150,69 @@ Test(line_suite, cat) {
 
 	line_free(b);
 	line_free(a);
+}
+
+/*─────────────────────────────────────────────────────────────
+  Lazy-loading specific tests
+  ────────────────────────────────────────────────────────────*/
+
+/*----------------------------------------------------------------------
+  9) Materialise on first read (line_get_string)
+  --------------------------------------------------------------------*/
+Test(line_suite_lazy, lazy_init_then_read) {
+	/* original buffer “xyz” (len = 3) */
+	const char *orig = "xyz";
+	struct line *li;
+	line_lazy_init(&li, orig, 3);
+
+	/* pre-conditions for a lazy line */
+	cr_assert(li->is_lazy);
+	cr_assert_null(li->vec);
+	cr_assert_eq(line_get_last(li), 3);
+
+	/* first read should materialise and return a C-string */
+	const char *s = STR(li);
+	cr_assert_str_eq(s, "xyz");
+	cr_assert_not(li->is_lazy);                 /* now materialised    */
+	cr_assert_not_null(li->vec);                /* vec was allocated   */
+	cr_assert_eq(line_get_last(li), 3);
+
+	line_free(li);
+}
+
+/*----------------------------------------------------------------------
+  10) Any edit must materialise the line (append path)
+  --------------------------------------------------------------------*/
+Test(line_suite_lazy, lazy_append) {
+	struct line *li;
+	line_lazy_init(&li, "hi", 2);              /* lazy “hi” */
+
+	line_append(li, '!');                      /* triggers materialise*/
+
+	cr_assert_not(li->is_lazy);
+	cr_assert_str_eq(STR(li), "hi!");
+	cr_assert_eq(line_get_last(li), 3);
+
+	line_free(li);
+}
+
+/*----------------------------------------------------------------------
+  11) line_cat with lazy source
+  --------------------------------------------------------------------*/
+Test(line_suite_lazy, cat_from_lazy_src) {
+	struct line *dest, *src;
+	line_init(&dest);
+	line_lazy_init(&src, "ABC", 3);            /* src still lazy */
+
+	for (const char *p = "123"; *p; ++p)
+		line_append(dest, *p);                 /* dest = “123” */
+
+	line_cat(dest, src);                       /* → “123ABC” */
+
+	cr_assert_str_eq(STR(dest), "123ABC");
+	cr_assert(src->is_lazy, "cat should *not* materialise src");
+	cr_assert(src->vec == NULL, "lazy src remains unmaterialised");
+
+	line_free(src);
+	line_free(dest);
 }
