@@ -19,7 +19,7 @@ void eb_set_cur_next_line(struct ed_buf *eb);
 void eb_set_cur_forward(struct ed_buf *eb);
 
 /* get */
-const char *eb_get_line_string(struct ed_buf *eb, size_t index);
+const char *eb_get_line_string(struct ed_buf *eb, size_t index); /* obsolate; use eb_get_line_slice instead */
 void eb_get_line_slice(const struct ed_buf *eb, size_t pos, struct slice *sl);
 size_t eb_get_cur_col(struct ed_buf *eb);
 size_t eb_get_cur_row(struct ed_buf *eb);

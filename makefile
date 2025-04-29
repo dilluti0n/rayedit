@@ -17,13 +17,13 @@ all: ${TARGET}
 ${TARGET}: ${OBJS}
 	${CC} ${LDFLAGS} -o ${TARGET} ${OBJS} ${LDLIBS}
 
-main.o: main.c line.h config.h vector.h editor.h makefile
+main.o: main.c line.h config.h vector.h editor.h slice.h makefile
 	${CC} ${CFLAGS} -c $< -o $@
 
-line.o: line.c config.h makefile
+line.o: line.c config.h slice.h makefile
 	${CC} ${CFLAGS} -c $< -o $@
 
-editor.o: editor.c line.h makefile
+editor.o: editor.c line.h slice.h makefile
 	${CC} ${CFLAGS} -c $< -o $@
 
 .PHONY+=test

@@ -31,6 +31,18 @@ void CustomLogCallback(int logLevel, const char *text, va_list args) {
 	fprintf(out, "\n");
 }
 
+static inline void draw_text_slice(int x, int y, int size, Color c,
+				   const struct slice sl) {
+	char line[4096];
+	size_t len;
+	if ((len = sl.len) > sizeof (line) - 1)
+		len = sizeof(line) - 1;
+	memcpy(line, sl.ptr, len);
+	line[len] = '\0';
+	DrawText(line, x, y, size, c);
+}
+
+
 int main(int argc, char *argv[]) {
 
 	if (argc != 2) {
@@ -90,7 +102,7 @@ int main(int argc, char *argv[]) {
 			/*	 (window_size.x - text_width) / 2, 0, */
 			/*	 font_size, BLACK); */
 
-			size_t linenum_to_draw = MIN(eb_get_line_num(eb), window_size.y / font_height);
+			const size_t linenum_to_draw = MIN(eb_get_line_num(eb), window_size.y / font_height);
 
 #ifdef DEBUG
 			printf("[draw]: %lu lines ------\n", linenum_to_draw);
@@ -99,17 +111,20 @@ int main(int argc, char *argv[]) {
 
 			for (size_t i = 0; i <= linenum_to_draw; i++) {
 				/* TODO: cannot draw cursor if it is on non_allocated line */
-				const char *to_draw = eb_get_line_string(eb, i);
+				struct slice sl = {};
+				eb_get_line_slice(eb, i, &sl);
 #ifdef DEBUG
-				printf("[draw]: line %lu\n", i);
+				printf("[draw]: line %lu, ptr=%p, len=%lu\n", i, sl.ptr, sl.len);
 #endif
 				if (i != eb_get_cur_row(eb)) {
-					DrawText(to_draw, 10, 10 + font_size * i,
-						 font_size, BLACK);
+					draw_text_slice(10, 10 + font_size * i,
+							font_size, BLACK, sl);
 				} else { /* draw cursor */
 					char buf[4096];
 					size_t cur_col = eb_get_cur_col(eb);
-					strcpy(buf, to_draw);
+					strncpy(buf, sl.ptr, sl.len);
+					if (sl.len < 4096)
+						buf[sl.len] = '\0';
 					if (buf[cur_col] == '\0')
 						buf[cur_col + 1] = '\0';
 					buf[cur_col] = '_';
