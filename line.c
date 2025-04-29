@@ -130,6 +130,10 @@ void line_split(struct line *li, size_t pos, struct line **newlinep) {
 
 	newline->vec = newvec;
 	newline->cursor = 0;
+	newline->is_lazy = 0;
+	newline->origin = NULL;
+	newline->origin_len = 0;
+
 	*newlinep = newline;
 }
 
