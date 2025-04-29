@@ -23,16 +23,31 @@ void line_init(struct line **lip) {
 #endif
 }
 
-void line_init_from_buf(struct line **lip, const char *buf, size_t len) {
-	struct line *li;
-	line_init(&li);
+static inline size_t next_pow2(size_t n) {
+	--n;
+	n |= n >> 1;
+	n |= n >> 2;
+	n |= n >> 4;
+	n |= n >> 8;
+	n |= n >> 16;
+#if SIZE_MAX > UINT32_MAX
+	n |= n >> 32;
+#endif
+	return ++n;
+}
 
-	Vec_char_resize(li->vec, len + 1);
+void line_init_from_buf(struct line **lip, const char *buf, size_t len) {
+	struct line *li = MemAlloc(sizeof(struct line));
+	size_t cap = next_pow2(len + 1);
+
+	Vec_char_init_with_capacity(&li->vec, cap);   // add this helper
+	li->vec->size = len + 1;
 
 	memcpy(li->vec->data, buf, len);
 	li->vec->data[len] = '\0';
-
 	li->last = len;
+	li->cursor = 0;
+
 	*lip = li;
 }
 

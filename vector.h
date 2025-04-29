@@ -27,6 +27,14 @@
 		nv->data = MemAlloc(to_alloc);				\
 		*v = nv;						\
 	}								\
+	static inline void name##_init_with_capacity(name **v, size_t cap) { \
+		name *nv = MemAlloc(sizeof (name));			\
+		nv->size = 0;						\
+		nv->capacity = cap;					\
+		const size_t to_alloc = nv->capacity * sizeof(type);	\
+		nv->data = MemAlloc(to_alloc);				\
+		*v = nv;						\
+	}								\
 	static inline void name##_clear(name *v) {			\
 		/* TODO - optimize */					\
 		v->size = 0;						\
