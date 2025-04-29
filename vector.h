@@ -50,7 +50,13 @@
 	static inline void name##_resize(name *v, size_t size) {	\
 		if (size > v->size) {					\
 			while (size > v->capacity)			\
-				name##_grow(v);				\
+				v->capacity *= 2;			\
+			const size_t to_alloc = v->capacity * sizeof(type); \
+			type *nd = MemAlloc(to_alloc);			\
+									\
+			memcpy(nd, v->data, v->size * sizeof(type));	\
+			MemFree(v->data);				\
+			v->data = nd;					\
 			memset(v->data + v->size, 0,			\
 			       (size - v->size) * sizeof (type));	\
 		}							\
