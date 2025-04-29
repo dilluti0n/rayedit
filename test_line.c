@@ -92,23 +92,6 @@ Test(line_suite, delete_at_pos) {
 }
 
 /*----------------------------------------------------------------------
-  5) Delete trailing character (backspace at end)
-  --------------------------------------------------------------------*/
-Test(line_suite, delete_trailing) {
-	struct line *li;
-	line_init(&li);
-
-	line_append(li, 'x');
-	line_append(li, 'y');
-
-	line_delete_trailing(li);     /* removes 'y' */
-	cr_assert_eq(line_get_last(li), 1);
-	cr_assert_str_eq(STR(li), "x");
-
-	line_free(li);
-}
-
-/*----------------------------------------------------------------------
   6) Clear line contents
   --------------------------------------------------------------------*/
 Test(line_suite, clear) {

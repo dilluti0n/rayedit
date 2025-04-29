@@ -6,21 +6,34 @@
 DEFINE_VECTOR(Vec_char, char);
 
 struct line {
-	Vec_char *vec;		/* always allocated; initial state is ['\0'] */
+	Vec_char *vec;	    /* could be NULL */
+	const char *origin;	/* original line pointer from eb_load_file */
+	size_t origin_len;
         size_t cursor;          /* cache used to callback last position */
-        size_t last;            /* always pointing first '\0' */
+
+	unsigned is_lazy : 1;
 };
 
 void line_init(struct line **lip) {
 	struct line *li = MemAlloc(sizeof(struct line));
 	Vec_char_init(&li->vec);
 	li->cursor = 0;
-	li->last = 0;
+	li->is_lazy = 0;
 	Vec_char_push(li->vec, '\0');
 	*lip = li;
 #ifdef DEBUG
 	printf("new line %p allocated\n", li);
 #endif
+}
+
+void line_lazy_init(struct line **lip, const char *origin, size_t len) {
+	struct line *li = MemAlloc(sizeof(struct line));
+	li->vec = NULL;
+	li->origin = origin;
+	li->origin_len = len;
+	li->cursor = 0;
+	li->is_lazy = 1;
+	*lip = li;
 }
 
 static inline size_t next_pow2(size_t n) {
@@ -45,18 +58,17 @@ void line_init_from_buf(struct line **lip, const char *buf, size_t len) {
 
 	memcpy(li->vec->data, buf, len);
 	li->vec->data[len] = '\0';
-	li->last = len;
 	li->cursor = 0;
 
 	*lip = li;
 }
 
 void line_append(struct line *li, char c) {
-	if (Vec_char_len(li->vec) > 0) {
-		Vec_char_set(li->vec, li->last++, c);
+	size_t vec_len;
+	if ((vec_len = Vec_char_len(li->vec)) > 0) {
+		Vec_char_set(li->vec, vec_len - 1, c);
 	} else {
 		Vec_char_push(li->vec, c);
-		li->last++;
 	}
 	Vec_char_push(li->vec, '\0');
 }
@@ -64,20 +76,11 @@ void line_append(struct line *li, char c) {
 void line_delete(struct line *li, size_t pos) {
 	ASSERT(pos < li->last);
 	Vec_char_delete(li->vec, pos);
-	--li->last;
-}
-
-void line_delete_trailing(struct line *li) {
-	if (li->last != 0)
-		--li->last;
-	Vec_char_set(li->vec, li->last, '\0');
-	Vec_char_pop(li->vec);
 }
 
 void line_clear(struct line *li) {
 	Vec_char_set(li->vec, 0, '\0');
 	li->vec->size = 1;
-	li->last = 0;
 }
 
 void line_set_cursor(struct line *li, size_t pos) {
@@ -89,7 +92,7 @@ size_t line_get_cursor(const struct line *li) {
 }
 
 size_t line_get_last(struct line *li) {
-	return li == NULL? 0 : li->last;
+	return li == NULL? 0 : Vec_char_len(li->vec) - 1;
 }
 
 void line_split(struct line *li, size_t pos, struct line **newlinep) {
@@ -98,13 +101,11 @@ void line_split(struct line *li, size_t pos, struct line **newlinep) {
 
 	Vec_char_split(li->vec, pos, &newvec);
 	Vec_char_push(li->vec, '\0'); /* this is inserted to pos */
-	li->last = pos;
 
 	struct line *newline = MemAlloc(sizeof(struct line));
 
 	newline->vec = newvec;
 	newline->cursor = 0;
-	newline->last = Vec_char_len(newvec) - 1; /* this should point '\0' */
 	*newlinep = newline;
 }
 
@@ -120,7 +121,6 @@ void line_insert(struct line *li, size_t pos, char ch) {
 #endif
 	ASSERT(pos <= li->last);
 	Vec_char_insert(li->vec, pos, ch);
-	li->last++;
 }
 
 /* NOTE this doesn't free src */
@@ -131,11 +131,12 @@ void line_cat(struct line *dest, const struct line *src) {
 #endif
 	ASSERT(dest != NULL);
 	ASSERT(src != NULL);
-	if (src->last == 0)
+	if (Vec_char_len(src->vec) == 1)
 		return;
-	Vec_char_delete(dest->vec, dest->last); /* delete '\0' */
+	size_t dest_last = Vec_char_len(dest->vec) - 1;
+	Vec_char_delete(dest->vec, dest_last); /* delete '\0' */
 	Vec_char_cat(dest->vec, src->vec);
-	dest->last += src->last;
+
 #ifdef DEBUG
 	printf("updated: dest->last: %lu\n", dest->last);
 #endif
