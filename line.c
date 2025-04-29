@@ -93,9 +93,11 @@ void line_append(struct line *li, char c) {
 
 /* return index of '\0' */
 size_t line_get_last(const struct line *li) {
+	if (li == NULL)
+		return 0;
 	if (li->is_lazy)
 		return li->origin_len;
-	return li == NULL? 0 : Vec_char_len(li->vec) - 1;
+	return Vec_char_len(li->vec) - 1;
 }
 
 void line_delete(struct line *li, size_t pos) {
