@@ -271,7 +271,7 @@ void eb_save_file(struct ed_buf *eb) {
 		struct line *li = Vec_slinep_get(eb->line_vec, i);
 		const char *str = li == NULL? "\0" : line_get_string(li);
 
-		fprintf(fp, str);
+		fprintf(fp, "%s", str);
 		fprintf(fp, "\n");
 	}
 	fclose(fp);
