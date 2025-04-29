@@ -49,15 +49,22 @@ static inline size_t next_pow2(size_t n) {
 	return ++n;
 }
 
-void line_init_from_buf(struct line **lip, const char *buf, size_t len) {
-	struct line *li = MemAlloc(sizeof(struct line));
+static inline Vec_char *produce_vec_from_buf(const char *buf, size_t len) {
+	Vec_char *vec;
 	size_t cap = next_pow2(len + 1);
 
-	Vec_char_init_with_capacity(&li->vec, cap);   // add this helper
-	li->vec->size = len + 1;
+	Vec_char_init_with_capacity(&vec, cap);
+	vec->size = len + 1;
 
-	memcpy(li->vec->data, buf, len);
-	li->vec->data[len] = '\0';
+	memcpy(vec->data, buf, len);
+	vec->data[len] = '\0';
+	return vec;
+}
+
+void line_init_from_buf(struct line **lip, const char *buf, size_t len) {
+	struct line *li = MemAlloc(sizeof(struct line));
+
+	li->vec = produce_vec_from_buf(buf, len);
 	li->cursor = 0;
 
 	*lip = li;
