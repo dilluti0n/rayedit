@@ -70,7 +70,18 @@ void line_init_from_buf(struct line **lip, const char *buf, size_t len) {
 	*lip = li;
 }
 
+
+static inline void edit_happen(struct line *li) {
+	if (li->is_lazy) {
+		ASSERT(li->origin != NULL);
+		li->vec = produce_vec_from_buf(li->origin, li->origin_len);
+		li->is_lazy = 0;
+	}
+}
+
 void line_append(struct line *li, char c) {
+	edit_happen(li);
+
 	size_t vec_len;
 	if ((vec_len = Vec_char_len(li->vec)) > 0) {
 		Vec_char_set(li->vec, vec_len - 1, c);
@@ -80,12 +91,20 @@ void line_append(struct line *li, char c) {
 	Vec_char_push(li->vec, '\0');
 }
 
+/* return index of '\0' */
+size_t line_get_last(struct line *li) {
+	if (li->is_lazy)
+		return li->origin_len;
+	return li == NULL? 0 : Vec_char_len(li->vec) - 1;
+}
+
 void line_delete(struct line *li, size_t pos) {
-	ASSERT(pos < li->last);
+	edit_happen(li);
 	Vec_char_delete(li->vec, pos);
 }
 
 void line_clear(struct line *li) {
+	edit_happen(li);
 	Vec_char_set(li->vec, 0, '\0');
 	li->vec->size = 1;
 }
@@ -98,12 +117,8 @@ size_t line_get_cursor(const struct line *li) {
 	return li->cursor;
 }
 
-size_t line_get_last(struct line *li) {
-	return li == NULL? 0 : Vec_char_len(li->vec) - 1;
-}
-
 void line_split(struct line *li, size_t pos, struct line **newlinep) {
-	ASSERT(pos < li->last);
+	edit_happen(li);
 	Vec_char *newvec = NULL;
 
 	Vec_char_split(li->vec, pos, &newvec);
@@ -117,6 +132,8 @@ void line_split(struct line *li, size_t pos, struct line **newlinep) {
 }
 
 const char *line_get_string(struct line *li) {
+	edit_happen(li);	/* TODO - migrate to not null-terminated string */
+
 	ASSERT(li != NULL && li->vec != NULL);
 	return (const char *)li->vec->data;
 }
@@ -124,9 +141,8 @@ const char *line_get_string(struct line *li) {
 void line_insert(struct line *li, size_t pos, char ch) {
 #ifdef DEBUG
 	printf("%s(%p, %lu, %c)\n", __func__, li, pos, ch);
-	printf("li->last: %lu\n", li->last);
 #endif
-	ASSERT(pos <= li->last);
+	edit_happen(li);
 	Vec_char_insert(li->vec, pos, ch);
 }
 
@@ -134,22 +150,26 @@ void line_insert(struct line *li, size_t pos, char ch) {
 void line_cat(struct line *dest, const struct line *src) {
 #ifdef DEBUG
 	printf("%s(%p, %p)\n", __func__, dest, src);
-	printf("dest->last: %lu\n", dest->last);
 #endif
 	ASSERT(dest != NULL);
 	ASSERT(src != NULL);
+
+	edit_happen(dest);
+
 	if (Vec_char_len(src->vec) == 1)
 		return;
-	size_t dest_last = Vec_char_len(dest->vec) - 1;
-	Vec_char_delete(dest->vec, dest_last); /* delete '\0' */
-	Vec_char_cat(dest->vec, src->vec);
 
-#ifdef DEBUG
-	printf("updated: dest->last: %lu\n", dest->last);
-#endif
+	size_t dest_last = Vec_char_len(dest->vec) - 1;
+
+	Vec_char_delete(dest->vec, dest_last); /* delete '\0' */
+	if (src->is_lazy)
+		Vec_char_cat_raw(dest->vec, src->origin, src->origin_len);
+	else
+		Vec_char_cat(dest->vec, src->vec);
 }
 
 void line_free(struct line *li) {
-	Vec_char_free(li->vec);
+	if (li != NULL)
+		Vec_char_free(li->vec);
 	MemFree(li);
 }

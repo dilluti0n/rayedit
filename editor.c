@@ -20,6 +20,8 @@ struct ed_buf {
 	size_t cur_col;
 	size_t scroll_row;
 	const char *file_name;
+	const char *raw;
+	size_t raw_size;
 };
 
 void eb_init(struct ed_buf **eb) {
@@ -29,6 +31,9 @@ void eb_init(struct ed_buf **eb) {
 	neb->cur_row = 0;
 	neb->cur_col = 0;
 	neb->scroll_row = 0;
+	neb->file_name = NULL;
+	neb->raw = NULL;
+	neb->raw_size = 0;
 
 	*eb = neb;
 }
@@ -40,6 +45,8 @@ void eb_free(struct ed_buf *eb) {
 			line_free(curr);
 	}
 	Vec_slinep_free(eb->line_vec);
+	if (eb->raw != NULL)
+		munmap((void *)eb->raw, eb->raw_size);
 	MemFree(eb);
 }
 
@@ -64,8 +71,6 @@ static inline struct line *ensure_line(struct ed_buf *eb, size_t row) {
 void eb_insert(struct ed_buf *eb, int ch) {
 #ifdef DEBUG
 	assert(eb != NULL);
-	printf("%s(%p, %c)\n", __func__, eb, ch);
-	printf("eb->cur_row %lu\n", eb->cur_row);
 #endif
 	struct line *line = ensure_line(eb, eb->cur_row);
 	line_insert(line, eb->cur_col++, ch);
@@ -80,8 +85,6 @@ void eb_delete_line(struct ed_buf *eb, size_t pos) {
 void eb_backspace(struct ed_buf *eb) {
 #ifdef DEBUG
 	assert(eb != NULL);
-	printf("%s(%p)\n", __func__, eb);
-	printf("eb->cur_row %lu\n", eb->cur_row);
 #endif
 	struct line *curr = eb_get_line(eb, eb->cur_row);
 	if (eb->cur_col == 0) {	      /* backspace to upper line */
@@ -235,13 +238,14 @@ void eb_load_file(struct ed_buf *eb) {
 			len--;
 
 		struct line *li;
-		line_init_from_buf(&li, start, len);
+		line_lazy_init(&li, start, len);
 		Vec_slinep_push(eb->line_vec, li);
 
 		start = newline + 1;
 	}
 
-	munmap((void *)raw, filesize);
+	eb->raw = raw;
+	eb->raw_size = filesize;
 	eb->cur_col = 0;
 	eb->cur_row = 0;
 }

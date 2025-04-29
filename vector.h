@@ -122,6 +122,15 @@
 		       src->size * sizeof (type));			\
 		dest->size = newsize;					\
 	}							        \
+	static inline void name##_cat_raw(name *dest, const type *src,	\
+					  size_t src_len) {		\
+		const size_t oldsize = dest->size;			\
+		const size_t newsize = oldsize + src_len;		\
+		name##_resize(dest, oldsize + src_len);			\
+		memcpy(dest->data + oldsize, src,			\
+		       src_len * sizeof (type));			\
+		dest->size = newsize;					\
+	}							        \
 	/* split from index and store it to *new */			\
 	static inline void name##_split(name *v, size_t index, name **new) { \
 		ASSERT(index < v->size);				\
