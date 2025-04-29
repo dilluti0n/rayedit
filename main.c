@@ -15,6 +15,8 @@
 #define MAIN_WINDOW_TITLE "window"
 #endif
 
+#define MIN(a, b) ((a) < (b))? (a) : (b)
+
 const int INIT_WIDTH = 800;
 const int INIT_HEIGHT = 600;
 
@@ -80,7 +82,8 @@ int main(int argc, char *argv[]) {
 
 		{
 			int font_size = 20;
-			/* int text_width = MeasureText(line->vec->data, font_size); */
+			float spacing = 1.0f;
+			float font_height = MeasureTextEx(GetFontDefault(), "a", font_size, spacing).y;
 
 			BeginDrawing();
 			ClearBackground(RAYWHITE);
@@ -88,12 +91,14 @@ int main(int argc, char *argv[]) {
 			/*	 (window_size.x - text_width) / 2, 0, */
 			/*	 font_size, BLACK); */
 
+			size_t linenum_to_draw = MIN(eb_get_line_num(eb), window_size.y / font_height);
+
 #ifdef DEBUG
-			printf("[draw]: %lu lines ------\n", eb_get_line_num(eb));
+			printf("[draw]: %lu lines ------\n", linenum_to_draw);
 			printf("[draw]: cursor: (%lu, %lu) ------\n", eb_get_cur_col(eb), eb_get_cur_row(eb));
 #endif
-			size_t i;
-			for (i = 0; i <= eb_get_line_num(eb); i++) {
+
+			for (size_t i = 0; i <= linenum_to_draw; i++) {
 				/* TODO: cannot draw cursor if it is on non_allocated line */
 				struct line *line = eb_get_line(eb, i);
 				const char *to_draw = (line != NULL)? line_get_string(line) : "\n";
