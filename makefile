@@ -33,7 +33,7 @@ TEST_PREFIX=./test
 test: ${TEST_TARGET}
 	./${TEST_TARGET}
 
-TEST_SRCS=test_vector.c test_line.c
+TEST_SRCS=test_vector.c test_line.c test_editor.c
 TEST_OBJS=$(filter-out main.o, $(OBJS))
 
 ${TEST_TARGET}: ${TEST_SRCS} ${TEST_OBJS}
