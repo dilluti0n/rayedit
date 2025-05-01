@@ -14,7 +14,7 @@ malloc/free and can be overriden in tests.
 
 * Implement
 ** Implement file I/O (UTF-8)
-*** TODO eb_load_file(), eb_save_file() using getline/writev
+*** DONE eb_load_file(), eb_save_file() using mmap/fputc
 ** Veiwpoint & scrolling
 *** TODO Use existing eb->scroll_row to handle mouse-wheel and PgUp/PgDn
 ** TODO selection + clipoard (kill ring)
