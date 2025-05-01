@@ -120,9 +120,11 @@ int main(int argc, char *argv[]) {
 					draw_text_slice(10, 10 + font_size * i,
 							font_size, BLACK, sl);
 				} else { /* draw cursor */
-					char buf[4096];
+
+#define BUFSIZE 4096
+					char buf[BUFSIZE];
 					size_t cur_col = eb_get_cur_col(eb);
-					strncpy(buf, sl.ptr == NULL? "" : sl.ptr, sl.len);
+					strncpy(buf, sl.ptr == NULL? "" : sl.ptr, MIN(sl.len, BUFSIZE));
 					if (sl.len < 4096)
 						buf[sl.len] = '\0';
 					if (buf[cur_col] == '\0')
