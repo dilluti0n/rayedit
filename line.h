@@ -21,10 +21,8 @@ void line_split(struct line *li, size_t pos, struct line **newlinep);
 void line_cat(struct line *dest, const struct line *src);
 
 /* set */
-void line_set_cursor(struct line *li, size_t pos);
 
 /* get */
-size_t line_get_cursor(const struct line *li);
 size_t line_get_last(const struct line *li);
 const char *line_get_string(struct line *li); /* obsolate; calls edit_happen */
 void line_get_slice(const struct line *li, struct slice *sl);

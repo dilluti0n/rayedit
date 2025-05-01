@@ -7,7 +7,7 @@ LDLIBS=${RAYLIB_PREFIX}/lib/libraylib.a -lm
 OBJS = main.o line.o editor.o
 
 ifeq ($(DEBUG), 1)
-CFLAGS += -DDEBUG -ggdb
+CFLAGS += -DDEBUG -ggdb -march=x86-64 -mtune=generic -fsanitize=address
 endif
 
 .PHONY=clean all

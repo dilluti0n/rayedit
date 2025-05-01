@@ -127,7 +127,6 @@ void eb_newline(struct ed_buf *eb) {
 	struct line *newline = NULL;
 
 	if (curr_line != NULL && eb->cur_col < line_get_last(curr_line)) {
-		line_set_cursor(curr_line, eb->cur_col); /* cache the cursor for upper line */
 		line_split(curr_line, eb->cur_col, &newline);
 	} else {
 		newline = NULL;
@@ -139,8 +138,8 @@ void eb_newline(struct ed_buf *eb) {
 
 void eb_set_cur_prev_line(struct ed_buf *eb) {
 	if (eb->cur_row > 0) {
-		struct line *prev = eb_get_line(eb, --eb->cur_row);
-		eb->cur_col = prev != NULL? line_get_cursor(prev) : 0;
+		--eb->cur_row;
+		eb->cur_col = 0;
 	}
 }
 
@@ -168,8 +167,8 @@ static inline bool is_cur_col_last(struct ed_buf *eb) {
 
 void eb_set_cur_next_line(struct ed_buf *eb) {
 	if (eb->cur_row < eb_get_line_num(eb)) {
-		struct line *next = eb_get_line(eb, ++eb->cur_row);
-		eb->cur_col = next != NULL? line_get_cursor(next) : 0;
+		eb->cur_row++;
+		eb->cur_col = 0;
 	}
 }
 

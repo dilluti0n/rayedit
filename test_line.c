@@ -12,7 +12,6 @@ struct line {
 	Vec_char *vec;	    /* could be NULL */
 	const char *origin;	/* original line pointer from eb_load_file */
 	size_t origin_len;
-        size_t cursor;          /* cache used to callback last position */
 
 	unsigned is_lazy : 1;
 };
