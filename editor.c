@@ -293,8 +293,7 @@ void eb_save_file(struct ed_buf *eb) {
 		struct slice sl = {};
 		eb_get_line_slice(eb, i, &sl);
 
-		for (size_t j = 0; j < sl.len; j++)
-			fputc(sl.ptr[j], fp);
+		fwrite(sl.ptr, 1, sl.len, fp);
 		fputc('\n', fp);
 	}
 	fclose(fp);
