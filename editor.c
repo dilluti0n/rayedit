@@ -290,10 +290,12 @@ void eb_save_file(struct ed_buf *eb) {
 	const size_t vec_len = Vec_slinep_len(eb->line_vec);
 
 	for (size_t i = 0; i < vec_len; i++) {
-		struct line *li = Vec_slinep_get(eb->line_vec, i);
-		const char *str = li == NULL? "\0" : line_get_string(li);
+		struct slice sl = {};
+		eb_get_line_slice(eb, i, &sl);
 
-		fprintf(fp, "%s\n", str);
+		for (size_t j = 0; j < sl.len; j++)
+			fputc(sl.ptr[j], fp);
+		fputc('\n', fp);
 	}
 	fclose(fp);
 
