@@ -1,5 +1,4 @@
-#ifndef VECTOR_H
-#define VECTOR_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -164,5 +163,3 @@
 	}								\
 
 /* TODO - replace memmove */
-
-#endif /* VECTOR_H */
