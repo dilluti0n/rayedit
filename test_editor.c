@@ -10,7 +10,7 @@
 
 DEFINE_VECTOR(Vec_slinep, struct line *);
 
-#define cr_assert_eb_eq(eb, row, col)		\
+#define cr_assert_eb_eq(eb, row, col)			\
 	cr_assert_eq(eb_get_cur_row(eb), row);		\
 	cr_assert_eq(eb_get_cur_col(eb), col);		\
 
@@ -18,6 +18,7 @@ DEFINE_VECTOR(Vec_slinep, struct line *);
 	if ((actual).len == 0) {					\
 		cr_assert_str_empty(expected);				\
 	} else {							\
+		cr_assert_eq(strlen(expected), (actual).len);		\
 		for (size_t i = 0; i < (actual).len; i++)		\
 			cr_assert_eq((actual).ptr[i], expected[i]);	\
 	}								\
@@ -47,12 +48,14 @@ Test(editor_suite, not_middle_of_line) {
 	cr_assert_eb_eq(eb, 0, 3);
 
 	eb_backspace(eb);
+	eb_get_line_slice(eb, 0, &sl);
 	cr_assert_slice_eq(sl, "re");
 	cr_assert_eb_eq(eb, 0, 2);
 
 	for (int i = 0; i < 10; i++)
 		eb_backspace(eb);
 
+	eb_get_line_slice(eb, 0, &sl);
 	cr_assert_slice_eq(sl, "");
 	cr_assert_eb_eq(eb, 0, 0);
 
@@ -70,14 +73,26 @@ Test(editor_suite, not_middle_of_line) {
 	/* red     *
 	 * pepper_ */
 	cr_assert_eb_eq(eb, 1, 6);
-	for (int i = 0; i < 7; i++)
+	for (int i = 0; i < 6; i++)
 		eb_backspace(eb);
 	eb_get_line_slice(eb, 1, &sl);
 	cr_assert_slice_eq(sl, "");
-	eb_backspace(eb);
+	cr_assert_eb_eq(eb, 1, 0);
+
+	eb_backspace(eb);	/* delete newline */
 	eb_get_line_slice(eb, 0, &sl);
 	cr_assert_slice_eq(sl, "red");
 	cr_assert_eb_eq(eb, 0, 3);
-	
+
+	eb_free(eb);
+}
+
+Test(editor_suite, cursor_move) {
+	struct ed_buf *eb = NULL;
+
+	eb_init(&eb);
+
+
+
 	eb_free(eb);
 }
