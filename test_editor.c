@@ -92,7 +92,17 @@ Test(editor_suite, cursor_move) {
 
 	eb_init(&eb);
 
+	cr_assert_fail("TODO");
 
+	eb_free(eb);
+}
+
+Test(editor_suite, middle_of_line) {
+	struct ed_buf *eb = NULL;
+
+	eb_init(&eb);
+
+	cr_assert_fail("TODO");
 
 	eb_free(eb);
 }
