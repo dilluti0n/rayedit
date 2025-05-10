@@ -110,7 +110,6 @@ int main(int argc, char *argv[]) {
 #endif
 
 			for (size_t i = 0; i <= linenum_to_draw; i++) {
-				/* TODO: cannot draw cursor if it is on non_allocated line */
 				struct slice sl = {};
 				eb_get_line_slice(eb, i, &sl);
 #ifdef DEBUG

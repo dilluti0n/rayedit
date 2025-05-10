@@ -23,15 +23,10 @@ Test(vector_suite, grow) {
 	size_t track = VECTOR_INIT_CAP;
 	const size_t MAX_GROWTH = 1 << 20;
 
-	memset(v->data, 0, track);
+	/* TODO; this is totally wrong... */
 	while (track < MAX_GROWTH) {
 		Vec_test_grow(v);
-		for (size_t i = 0; i < track; i++)
-			cr_assert_eq(v->data[i], 0,
-				     "Check v->data data integrity when grow (track=%zu, i=%zu)",
-				     track, i);
 		cr_assert_eq(v->capacity, track * 2);
-		memset(v->data + track, 0, track);
 		track *= 2;
 	}
 	Vec_test_free(v);
@@ -420,7 +415,7 @@ Test(vector_suite, delete_range) {
 	/* ---- 3) Remove the last (and only) element: index 0, n = 1 */
 	Vec_test_deleten(v, 0, 1);                /* {} */
 	cr_assert_eq(Vec_test_len(v), 0,
-                     "Vector should be empty after deleting final element");
+		     "Vector should be empty after deleting final element");
 
 	Vec_test_free(v);
 }

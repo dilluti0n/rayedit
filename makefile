@@ -7,7 +7,7 @@ LDLIBS=${RAYLIB_PREFIX}/lib/libraylib.a -lm
 OBJS = main.o line.o editor.o
 
 ifeq ($(DEBUG), 1)
-CFLAGS += -DDEBUG -ggdb -march=x86-64 -mtune=generic -fsanitize=address
+CFLAGS += -DDEBUG -ggdb
 endif
 
 .PHONY=clean all
@@ -30,6 +30,8 @@ editor.o: editor.c line.h slice.h makefile
 TEST_TARGET=unittest
 TEST_PREFIX=./test
 
+TEST_CFLAGS = -ggdb -march=x86-64 -mtune=generic -fsanitize=address
+
 test: ${TEST_TARGET}
 	./${TEST_TARGET}
 
@@ -37,8 +39,7 @@ TEST_SRCS=test_vector.c test_line.c test_editor.c
 TEST_OBJS=$(filter-out main.o, $(OBJS))
 
 ${TEST_TARGET}: ${TEST_SRCS} ${TEST_OBJS}
-	${CC} ${CFLAGS} ${TEST_SRCS} ${TEST_OBJS} -o $@ -lcriterion ${LDLIBS}
+	${CC} ${CFLAGS} ${TEST_CFLAGS} ${TEST_SRCS} ${TEST_OBJS} -o $@ -lcriterion ${LDLIBS}
 
 clean:
 	rm -rf ${OBJS} ${TARGET} ${TEST_TARGET}
-

@@ -57,8 +57,34 @@ static inline struct line *eb_get_line(const struct ed_buf *eb, size_t index) {
 	return Vec_slinep_get(eb->line_vec, index);
 }
 
+#ifdef DEBUG
+static void print_eb(struct ed_buf *eb) {
+	printf("eb->line_vec: %p\n\
+eb->cur_row: %lu\n\
+eb->cur_col: %lu\n\
+eb->scroll_row: %lu\n\
+eb->file_name: %s\n\
+eb->raw: %p\n\
+eb->raw_size: %lu\n",
+	       eb->line_vec,
+	       eb->cur_row,
+	       eb->cur_col,
+	       eb->scroll_row,
+	       eb->file_name,
+	       eb->raw,
+	       eb->raw_size);
+}
+#endif
+
+#ifdef DEBUG
+#define PRINT_EB(eb) print_eb(eb)
+#else
+#define PRINT_EB(eb) ((void)0)
+#endif
+
 static inline struct line *ensure_line(struct ed_buf *eb, size_t row) {
 	ASSERT(row <= Vec_slinep_len(eb->line_vec));
+	PRINT_EB(eb);
 	struct line *li;
 	if (row == Vec_slinep_len(eb->line_vec)) {
 		line_init(&li);
@@ -69,6 +95,12 @@ static inline struct line *ensure_line(struct ed_buf *eb, size_t row) {
 	li = Vec_slinep_get(eb->line_vec, row);
 	if (li == NULL) {
 		line_init(&li);
+
+		struct line *oldli = Vec_slinep_get(eb->line_vec, row);
+
+		if (oldli != NULL)
+			line_free(oldli);
+
 		Vec_slinep_set(eb->line_vec, row, li);
 	}
 	return li;
@@ -76,23 +108,23 @@ static inline struct line *ensure_line(struct ed_buf *eb, size_t row) {
 
 /* insert ch to cursor */
 void eb_insert(struct ed_buf *eb, int ch) {
-#ifdef DEBUG
-	assert(eb != NULL);
-#endif
+	ASSERT(eb != NULL);
 	struct line *line = ensure_line(eb, eb->cur_row);
 	line_insert(line, eb->cur_col++, ch);
 }
 
 void eb_delete_line(struct ed_buf *eb, size_t pos) {
 	ASSERT(pos <= Vec_slinep_len(eb->line_vec));
-	if (pos < Vec_slinep_len(eb->line_vec))
+	if (pos < Vec_slinep_len(eb->line_vec)) {
+		struct line *li;
+		if ((li = Vec_slinep_get(eb->line_vec, pos)) != NULL)
+			line_free(li);
 		Vec_slinep_delete(eb->line_vec, pos);
+	}
 }
 
 void eb_backspace(struct ed_buf *eb) {
-#ifdef DEBUG
-	assert(eb != NULL);
-#endif
+	ASSERT(eb != NULL);
 	struct line *curr = eb_get_line(eb, eb->cur_row);
 	if (eb->cur_col == 0) {	      /* backspace to upper line */
 		if (eb->cur_row == 0) /* nothing to remove */
@@ -301,4 +333,5 @@ void eb_save_file(struct ed_buf *eb) {
 		perror("rename: ");
 		unlink(tmp_path);
 	}
+	printf("saved to: %s\n", eb->file_name);
 }

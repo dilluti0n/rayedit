@@ -3,6 +3,8 @@
 #include "raylib.h"
 #include "line.h"
 
+#include <stdio.h>
+
 DEFINE_VECTOR(Vec_char, char);
 
 struct line {
@@ -19,9 +21,6 @@ void line_init(struct line **lip) {
 	li->is_lazy = 0;
 	Vec_char_push(li->vec, '\0');
 	*lip = li;
-#ifdef DEBUG
-	printf("new line %p allocated\n", li);
-#endif
 }
 
 void line_lazy_init(struct line **lip, const char *origin, size_t len) {
@@ -70,6 +69,7 @@ void line_init_from_buf(struct line **lip, const char *buf, size_t len) {
 static inline void edit_happen(struct line *li) {
 	if (li->is_lazy) {
 		ASSERT(li->origin != NULL);
+		ASSERT(li->vec == NULL);
 		li->vec = produce_vec_from_buf(li->origin, li->origin_len);
 		li->is_lazy = 0;
 	}
@@ -163,7 +163,7 @@ void line_cat(struct line *dest, const struct line *src) {
 	ASSERT(src != NULL);
 
 	if (line_get_last(src) == 0)
-		return; 	/* trivial cat */
+		return;		/* trivial cat */
 
 	edit_happen(dest);
 
@@ -179,9 +179,9 @@ void line_cat(struct line *dest, const struct line *src) {
 
 void line_free(struct line *li) {
 	ASSERT(li != NULL);
-	if (!li->is_lazy) {
-		ASSERT(li->vec != NULL);
+
+	if (li->vec != NULL)
 		Vec_char_free(li->vec);
-	}
+
 	MemFree(li);
 }
