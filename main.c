@@ -32,7 +32,7 @@ void CustomLogCallback(int logLevel, const char *text, va_list args) {
 }
 
 static inline void draw_text_slice(int x, int y, int size, Color c,
-			    const struct slice sl) {
+				   const struct slice sl) {
 	char line[4096];
 	size_t len;
 	if ((len = sl.len) > sizeof (line) - 1)
