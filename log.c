@@ -3,21 +3,21 @@
 
 #include "log.h"
 
-static log_level log_curr = LOG_INFO;
+static enum log_level log_curr = RED_LOG_INFO;
 
-void log_set_level(log_level level) {
+void log_set_level(enum log_level level) {
 	log_curr = level;
 }
 
-void log_fprintf(log_level level, FILE *fp, const char *format, ...) {
+void log_fprintf(enum log_level level, FILE *fp, const char *format, ...) {
 	if (level < log_curr)
 		return;
 
-	const char *levelStr = (level == LOG_DEBUG) ? "DEBUG" :
-                               (level == LOG_INFO) ? "INFO" :
-                               (level == LOG_WARNING) ? "WARN" :
-                               (level == LOG_ERROR) ? "ERROR" :
-                               (level == LOG_CRITICAL) ? "CRIT" : "UNKNOWN";
+	const char *levelStr = (level == RED_LOG_DEBUG) ? "DEBUG" :
+			       (level == RED_LOG_INFO) ? "INFO" :
+			       (level == RED_LOG_WARNING) ? "WARN" :
+			       (level == RED_LOG_ERROR) ? "ERROR" :
+			       (level == RED_LOG_CRITICAL) ? "CRIT" : "UNKNOWN";
 
 	va_list args;
 	va_start(args, format);

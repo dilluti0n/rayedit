@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "log.h"
 #include "editor.h"
 #include "config.h"
 
@@ -22,13 +23,32 @@ const int INIT_HEIGHT = 600;
 Vector2 window_size = {.x = INIT_WIDTH, .y = INIT_HEIGHT};
 
 void CustomLogCallback(int logLevel, const char *text, va_list args) {
-	FILE *out = stderr;
-	fprintf(out, "[%s] ", (logLevel == LOG_INFO) ? "INFO" :
-		(logLevel == LOG_WARNING) ? "WARN" :
-		(logLevel == LOG_ERROR) ? "ERR" : "DEBUG");
+	enum log_level red_level = RED_LOG_ALL;
 
-	vfprintf(out, text, args);
-	fprintf(out, "\n");
+	switch (logLevel) {
+	case LOG_ALL:
+		red_level = RED_LOG_ALL;
+		break;
+	case LOG_TRACE:
+	case LOG_DEBUG:
+		red_level = RED_LOG_DEBUG;
+		break;
+	case LOG_INFO:
+		red_level = RED_LOG_INFO;
+		break;
+	case LOG_WARNING:
+		red_level = RED_LOG_WARNING;
+		break;
+	case LOG_ERROR:
+	case LOG_FATAL:
+		red_level = RED_LOG_ERROR;
+		break;
+	case LOG_NONE:
+		red_level = RED_LOG_NONE;
+		break;
+	}
+
+	log_fprintf(red_level, stdout, text, args);
 }
 
 static inline void draw_text_slice(int x, int y, int size, Color c,
@@ -49,11 +69,16 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	/* set log */
+	log_set_level(RED_LOG_ALL);
 	SetTraceLogCallback(CustomLogCallback);
+
+	/* init window */
 	InitWindow(window_size.x, window_size.y, MAIN_WINDOW_TITLE);
 	SetWindowState(FLAG_WINDOW_RESIZABLE);
 	EnableEventWaiting();
 
+	/* game loop */
 	struct ed_buf *eb;
 	eb_init(&eb);
 	eb_bind(eb, argv[1]);
@@ -136,6 +161,8 @@ int main(int argc, char *argv[]) {
 			EndDrawing();
 		}
 	}
+
+	/* cleanup */
 	CloseWindow();
 	eb_free(eb);
 }
