@@ -3,10 +3,10 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>		/* memcpy */
-#include <raylib.h>	 /* MemAlloc, MemFree */
 #include <assert.h>
 
 #include "config.h"
+#include "mem.h"
 
 #ifndef VECTOR_INIT_CAP
 #define VECTOR_INIT_CAP 64
@@ -19,19 +19,19 @@
 	} name;								\
 									\
 	static inline void name##_init(name **v) {			\
-		name *nv = MemAlloc(sizeof (name));			\
+		name *nv = mem_malloc(sizeof (name));			\
 		nv->size = 0;						\
 		nv->capacity = VECTOR_INIT_CAP;				\
 		const size_t to_alloc = nv->capacity * sizeof(type);	\
-		nv->data = MemAlloc(to_alloc);				\
+		nv->data = mem_malloc(to_alloc);				\
 		*v = nv;						\
 	}								\
 	static inline void name##_init_with_capacity(name **v, size_t cap) { \
-		name *nv = MemAlloc(sizeof (name));			\
+		name *nv = mem_malloc(sizeof (name));			\
 		nv->size = 0;						\
 		nv->capacity = cap;					\
 		const size_t to_alloc = nv->capacity * sizeof(type);	\
-		nv->data = MemAlloc(to_alloc);				\
+		nv->data = mem_malloc(to_alloc);				\
 		*v = nv;						\
 	}								\
 	static inline void name##_clear(name *v) {			\
@@ -39,8 +39,8 @@
 		v->size = 0;						\
 	}								\
 	static inline void name##_free(name *v) {			\
-		MemFree(v->data);					\
-		MemFree(v);						\
+		mem_free(v->data);					\
+		mem_free(v);						\
 	}								\
 	static inline void name##_grow(name *v) {			\
 		ASSERT(v->capacity < SIZE_MAX / 2);			\
@@ -48,10 +48,10 @@
 		v->capacity *= 2;					\
 									\
 		const size_t to_alloc = v->capacity * sizeof(type);	\
-		type *nd = MemAlloc(to_alloc);				\
+		type *nd = mem_malloc(to_alloc);				\
 									\
 		memcpy(nd, v->data, v->size * sizeof(type));		\
-		MemFree(v->data);					\
+		mem_free(v->data);					\
 		v->data = nd;						\
 	}								\
 	static inline void name##_resize(name *v, size_t size) {	\
@@ -59,10 +59,10 @@
 			while (size > v->capacity)			\
 				v->capacity *= 2;			\
 			const size_t to_alloc = v->capacity * sizeof(type); \
-			type *nd = MemAlloc(to_alloc);			\
+			type *nd = mem_malloc(to_alloc);			\
 									\
 			memcpy(nd, v->data, v->size * sizeof(type));	\
-			MemFree(v->data);				\
+			mem_free(v->data);				\
 			v->data = nd;					\
 			memset(v->data + v->size, 0,			\
 			       (size - v->size) * sizeof (type));	\

@@ -1,6 +1,6 @@
 #include "vector.h"
 #include "config.h"
-#include "raylib.h"
+#include "mem.h"
 #include "line.h"
 
 #include <stdio.h>
@@ -16,7 +16,7 @@ struct line {
 };
 
 void line_init(struct line **lip) {
-	struct line *li = MemAlloc(sizeof(struct line));
+	struct line *li = mem_malloc(sizeof(struct line));
 	Vec_char_init(&li->vec);
 	li->is_lazy = 0;
 	Vec_char_push(li->vec, '\0');
@@ -24,7 +24,7 @@ void line_init(struct line **lip) {
 }
 
 void line_lazy_init(struct line **lip, const char *origin, size_t len) {
-	struct line *li = MemAlloc(sizeof(struct line));
+	struct line *li = mem_malloc(sizeof(struct line));
 	li->vec = NULL;
 	li->origin = origin;
 	li->origin_len = len;
@@ -58,7 +58,7 @@ static inline Vec_char *produce_vec_from_buf(const char *buf, size_t len) {
 }
 
 void line_init_from_buf(struct line **lip, const char *buf, size_t len) {
-	struct line *li = MemAlloc(sizeof(struct line));
+	struct line *li = mem_malloc(sizeof(struct line));
 
 	li->vec = produce_vec_from_buf(buf, len);
 
@@ -114,7 +114,7 @@ void line_split(struct line *li, size_t pos, struct line **newlinep) {
 	Vec_char_split(li->vec, pos, &newvec);
 	Vec_char_push(li->vec, '\0'); /* this is inserted to pos */
 
-	struct line *newline = MemAlloc(sizeof(struct line));
+	struct line *newline = mem_malloc(sizeof(struct line));
 
 	newline->vec = newvec;
 	newline->is_lazy = 0;
@@ -183,5 +183,5 @@ void line_free(struct line *li) {
 	if (li->vec != NULL)
 		Vec_char_free(li->vec);
 
-	MemFree(li);
+	mem_free(li);
 }

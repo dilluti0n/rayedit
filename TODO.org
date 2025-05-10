@@ -3,7 +3,7 @@
 * TODO As implement new Editorbuffer API, write corresponding unit tests.
 
 * Refactor
-** TODO Remove the implicit dependancy of MemAlloc and MemFree provided by Raylib.
+** DONE Remove the implicit dependancy of MemAlloc and MemFree provided by Raylib.
 introduce a tiny allocater wrapper(ed_alloc.h) that defaults to
 malloc/free and can be overriden in tests.
 ** TODO Replace scattered `#ifdef DEBUG` prints with a reallog macro family.

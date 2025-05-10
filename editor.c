@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
+#include <stdbool.h>
 
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -26,7 +27,7 @@ struct ed_buf {
 };
 
 void eb_init(struct ed_buf **eb) {
-	struct ed_buf *neb = MemAlloc(sizeof(struct ed_buf));
+	struct ed_buf *neb = mem_malloc(sizeof(struct ed_buf));
 
 	Vec_slinep_init(&neb->line_vec);
 	neb->cur_row = 0;
@@ -48,7 +49,7 @@ void eb_free(struct ed_buf *eb) {
 	Vec_slinep_free(eb->line_vec);
 	if (eb->raw != NULL)
 		munmap((void *)eb->raw, eb->raw_size);
-	MemFree(eb);
+	mem_free(eb);
 }
 
 static inline struct line *eb_get_line(const struct ed_buf *eb, size_t index) {
