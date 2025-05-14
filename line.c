@@ -178,7 +178,7 @@ void line_cat(struct line *dest, const struct line *src) {
 void line_free(struct line *li) {
 	ASSERT(li != NULL);
 
-	if (li->vec != NULL)
+	if (!li->is_lazy)
 		Vec_char_free(li->vec);
 
 	mem_free(li);

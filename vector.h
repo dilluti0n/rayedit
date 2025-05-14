@@ -23,7 +23,7 @@
 		nv->size = 0;						\
 		nv->capacity = VECTOR_INIT_CAP;				\
 		const size_t to_alloc = nv->capacity * sizeof(type);	\
-		nv->data = mem_malloc(to_alloc);				\
+		nv->data = mem_malloc(to_alloc);			\
 		*v = nv;						\
 	}								\
 	static inline void name##_init_with_capacity(name **v, size_t cap) { \
@@ -31,7 +31,7 @@
 		nv->size = 0;						\
 		nv->capacity = cap;					\
 		const size_t to_alloc = nv->capacity * sizeof(type);	\
-		nv->data = mem_malloc(to_alloc);				\
+		nv->data = mem_malloc(to_alloc);			\
 		*v = nv;						\
 	}								\
 	static inline void name##_clear(name *v) {			\
@@ -48,7 +48,7 @@
 		v->capacity *= 2;					\
 									\
 		const size_t to_alloc = v->capacity * sizeof(type);	\
-		type *nd = mem_malloc(to_alloc);				\
+		type *nd = mem_malloc(to_alloc);			\
 									\
 		memcpy(nd, v->data, v->size * sizeof(type));		\
 		mem_free(v->data);					\
@@ -59,7 +59,7 @@
 			while (size > v->capacity)			\
 				v->capacity *= 2;			\
 			const size_t to_alloc = v->capacity * sizeof(type); \
-			type *nd = mem_malloc(to_alloc);			\
+			type *nd = mem_malloc(to_alloc);		\
 									\
 			memcpy(nd, v->data, v->size * sizeof(type));	\
 			mem_free(v->data);				\

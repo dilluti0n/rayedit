@@ -11,6 +11,7 @@
 #include "editor.h"
 #include "line.h"
 #include "vector.h"
+#include "log.h"
 
 #include "config.h"
 
@@ -60,7 +61,7 @@ static inline struct line *eb_get_line(const struct ed_buf *eb, size_t index) {
 
 #ifdef DEBUG
 static void print_eb(struct ed_buf *eb) {
-	printf("eb->line_vec: %p\n\
+	log_printf(RED_LOG_DEBUG, "eb->line_vec: %p\n\
 eb->cur_row: %lu\n\
 eb->cur_col: %lu\n\
 eb->scroll_row: %lu\n\
@@ -75,12 +76,26 @@ eb->raw_size: %lu\n",
 	       eb->raw,
 	       eb->raw_size);
 }
+
+
+static void print_eb_vec(struct ed_buf *eb) {
+	if (eb->line_vec != NULL) {
+		size_t len = Vec_slinep_len(eb->line_vec);
+		for (size_t i = 0; i < len; i++) {
+			log_printf(RED_LOG_DEBUG,
+				   "line %u, %p\n",
+				   i, Vec_slinep_get(eb->line_vec, i));
+		}
+	}
+}
 #endif
 
 #ifdef DEBUG
 #define PRINT_EB(eb) print_eb(eb)
+#define PRINT_EB_VEC(eb) print_eb_vec(eb)
 #else
 #define PRINT_EB(eb) ((void)0)
+#define PRINT_EB_VEC(eb) ((void)0)
 #endif
 
 static inline struct line *ensure_line(struct ed_buf *eb, size_t row) {
@@ -116,6 +131,7 @@ void eb_insert(struct ed_buf *eb, int ch) {
 
 void eb_delete_line(struct ed_buf *eb, size_t pos) {
 	ASSERT(pos <= Vec_slinep_len(eb->line_vec));
+	PRINT_EB_VEC(eb);
 	if (pos < Vec_slinep_len(eb->line_vec)) {
 		struct line *li;
 		if ((li = Vec_slinep_get(eb->line_vec, pos)) != NULL)
@@ -139,7 +155,6 @@ void eb_backspace(struct ed_buf *eb) {
 			const size_t upper_last = line_get_last(upper);
 			if (line_get_last(curr) > 0) {
 				line_cat(upper, curr);
-				line_free(curr);
 			}
 			eb_delete_line(eb, eb->cur_row);
 			eb->cur_col = upper_last;

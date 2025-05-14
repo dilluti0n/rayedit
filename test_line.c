@@ -18,7 +18,7 @@ struct line {
 
 #include "line.h"
 
-#define STR(li)   line_get_string(li)   /* shorthand        */
+#define STR(li)   line_get_string(li)   /* shorthand */
 
 /*----------------------------------------------------------------------
   1) Construction and basic invariants

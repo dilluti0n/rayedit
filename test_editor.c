@@ -7,6 +7,7 @@
 #include "editor.h"
 
 #include "vector.h"
+#include "log.h"
 
 DEFINE_VECTOR(Vec_slinep, struct line *);
 
@@ -96,6 +97,8 @@ Test(editor_suite, cursor_move) {
 Test(editor_suite, middle_of_line) {
 	struct ed_buf *eb = NULL;
 	struct slice sl = {};
+
+	log_init(RED_LOG_ALL, stdout);
 
 	eb_init(&eb);
 	cr_assert_eb_eq(eb, 0, 0);
