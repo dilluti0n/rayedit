@@ -7,7 +7,7 @@
 introduce a tiny allocater wrapper(ed_alloc.h) that defaults to
 malloc/free and can be overriden in tests.
 ** TODO Replace scattered `#ifdef DEBUG` prints with a reallog macro family.
-(levels: TRACE/INFO/WARN/ERR)
+(levels: DEBUG/INFO/WARNING/ERROR/CRITICAL)
 ** Strengthen `line`/`editor` invariants.
 *** TODO Guarantee cursor never overwrites the terminating '\0'
 *** TODO Add edge-case tests: enpty line, NULL-line placeholders, split/cat boundaries

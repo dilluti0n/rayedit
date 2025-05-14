@@ -12,5 +12,5 @@ enum log_level {
 	RED_LOG_NONE,		/* do not display log */
 };
 
-void log_set_level(enum log_level level);
-void log_fprintf(enum log_level level, FILE *fp, const char *format, ...);
+void log_init(enum log_level level, FILE *stream);
+void log_printf(enum log_level level, const char *format, ...);

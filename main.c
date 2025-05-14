@@ -48,7 +48,7 @@ void CustomLogCallback(int logLevel, const char *text, va_list args) {
 		break;
 	}
 
-	log_fprintf(red_level, stdout, text, args);
+	log_printf(red_level, text, args);
 }
 
 static inline void draw_text_slice(int x, int y, int size, Color c,
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	/* set log */
-	log_set_level(RED_LOG_ALL);
+	log_init(RED_LOG_ALL, stdout);
 	SetTraceLogCallback(CustomLogCallback);
 
 	/* init window */
