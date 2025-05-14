@@ -2,6 +2,7 @@
 #include "config.h"
 #include "mem.h"
 #include "line.h"
+#include "log.h"
 
 #include <stdio.h>
 
@@ -147,18 +148,15 @@ void line_get_slice(const struct line *li, struct slice *sl) {
 }
 
 void line_insert(struct line *li, size_t pos, char ch) {
-#ifdef DEBUG
-	printf("%s(%p, %lu, %c)\n", __func__, li, pos, ch);
-#endif
+	log_printf(RED_LOG_DEBUG, "%s(%p, %lu, %c)\n", __func__, li, pos, ch);
 	edit_happen(li);
 	Vec_char_insert(li->vec, pos, ch);
 }
 
 /* NOTE this doesn't free src */
 void line_cat(struct line *dest, const struct line *src) {
-#ifdef DEBUG
-	printf("%s(%p, %p)\n", __func__, dest, src);
-#endif
+	log_printf(RED_LOG_DEBUG, "%s(%p, %p)\n", __func__, dest, src);
+
 	ASSERT(dest != NULL);
 	ASSERT(src != NULL);
 

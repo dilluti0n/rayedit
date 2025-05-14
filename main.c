@@ -49,6 +49,7 @@ void CustomLogCallback(int logLevel, const char *text, va_list args) {
 	}
 
 	log_printf(red_level, text, args);
+	log_printf(red_level, "\n");
 }
 
 static inline void draw_text_slice(int x, int y, int size, Color c,
@@ -70,7 +71,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	/* set log */
-	log_init(RED_LOG_ALL, stdout);
+	log_init(LOGLEVEL, stdout);
 	SetTraceLogCallback(CustomLogCallback);
 
 	/* init window */
@@ -129,17 +130,21 @@ int main(int argc, char *argv[]) {
 
 			const size_t linenum_to_draw = MIN(eb_get_line_num(eb), window_size.y / font_height);
 
-#ifdef DEBUG
-			printf("[draw]: %lu lines ------\n", linenum_to_draw);
-			printf("[draw]: cursor: (%lu, %lu) ------\n", eb_get_cur_col(eb), eb_get_cur_row(eb));
-#endif
+
+			log_printf(RED_LOG_DEBUG,
+				   "[draw]: %lu lines ------\n", linenum_to_draw);
+			log_printf(RED_LOG_DEBUG,
+				   "[draw]: cursor: (%lu, %lu) ------\n",
+				   eb_get_cur_col(eb), eb_get_cur_row(eb));
+
 
 			for (size_t i = 0; i <= linenum_to_draw; i++) {
 				struct slice sl = {};
 				eb_get_line_slice(eb, i, &sl);
-#ifdef DEBUG
-				printf("[draw]: line %lu, ptr=%p, len=%lu\n", i, sl.ptr, sl.len);
-#endif
+				log_printf(RED_LOG_DEBUG,
+					   "[draw]: line %lu, ptr=%p, len=%lu\n",
+					   i, sl.ptr, sl.len);
+
 				if (i != eb_get_cur_row(eb)) {
 					draw_text_slice(10, 10 + font_size * i,
 							font_size, BLACK, sl);

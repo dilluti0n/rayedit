@@ -1,12 +1,13 @@
 #pragma once
 
 #ifdef DEBUG
-#include <stdio.h>
+
 #include <assert.h>
 #define ASSERT(cond) assert(cond)
-#include <stdlib.h>
-#define mem_malloc malloc
-#define mem_free free
+#define LOGLEVEL RED_LOG_DEBUG
 #else
+
 #define ASSERT(cond) ((void)0)
+#define LOGLEVEL RED_LOG_INFO
+
 #endif

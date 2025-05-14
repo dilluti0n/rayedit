@@ -28,6 +28,5 @@ void log_printf(enum log_level level, const char *format, ...) {
 	va_start(args, format);
 	fprintf(log_stream, "[%s] ", level_str);
 	vfprintf(log_stream, format, args);
-	fprintf(log_stream, "\n");
 	va_end(args);
 }
