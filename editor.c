@@ -297,7 +297,7 @@ void eb_load_file(struct ed_buf *eb) {
 
 		/* handling CRLF */
 		size_t len = (size_t)(newline - start);
-		if (len > 0 && start[len - 1] == '\r')
+		if (newline > start && start[len - 1] == '\r')
 			len--;
 
 		struct line *li;
