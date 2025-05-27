@@ -31,7 +31,13 @@ test: $(TEST_TARGET)
 	./$(TEST_TARGET)
 
 TEST_SRCS := $(wildcard test_*.c)
-TEST_OBJS := $(filter-out main.o, $(OBJS))
+TEST_OBJS := $(patsubst %.o,%.test.o,$(filter-out main.o,$(OBJS)))
+TEST_DEPS := $(TEST_OBJS:.test.o=.test.d)
+
+-include $(TEST_DEPS)
+
+%.test.o: %.c
+	$(CC) $(CFLAGS) $(TEST_CFLAGS) -MMD -c $< -o $@
 
 $(TEST_TARGET): $(TEST_SRCS) $(TEST_OBJS)
 	$(CC) $(CFLAGS) $(TEST_CFLAGS) $^ -o $@ -lcriterion $(LDLIBS)
