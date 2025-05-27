@@ -19,7 +19,7 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(CC) $(LDFLAGS) -o $(TARGET) $(OBJS) $(LDLIBS)
 
-%.o: %.c
+%.o: %.c $(MAKEFILE_LIST)
 	$(CC) $(CFLAGS) -MMD -c $< -o $@
 
 -include $(DEPS)
@@ -36,7 +36,7 @@ TEST_DEPS := $(TEST_OBJS:.test.o=.test.d)
 
 -include $(TEST_DEPS)
 
-%.test.o: %.c
+%.test.o: %.c $(MAKEFILE_LIST)
 	$(CC) $(CFLAGS) $(TEST_CFLAGS) -MMD -c $< -o $@
 
 $(TEST_TARGET): $(TEST_SRCS) $(TEST_OBJS)
