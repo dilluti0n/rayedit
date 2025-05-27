@@ -18,10 +18,13 @@
 DEFINE_VECTOR(Vec_slinep, struct line *);
 
 struct ed_buf {
+	/* editor */
 	Vec_slinep *line_vec;
 	size_t cur_row;
 	size_t cur_col;
 	size_t scroll_row;
+
+	/* file */
 	const char *file_name;
 	const char *raw;
 	size_t raw_size;
@@ -309,8 +312,6 @@ void eb_load_file(struct ed_buf *eb) {
 
 	eb->raw = raw;
 	eb->raw_size = filesize;
-	eb->cur_col = 0;
-	eb->cur_row = 0;
 }
 
 void eb_save_file(struct ed_buf *eb) {
