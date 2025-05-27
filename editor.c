@@ -390,5 +390,5 @@ void eb_save_file(struct ed_buf *eb) {
 		perror("rename");
 		unlink(tmp_path);
 	}
-	printf("saved to: %s\n", eb->file_name);
+	log_printf(RED_LOG_INFO, "saved to: %s\n", eb->file_name);
 }
