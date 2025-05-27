@@ -11,3 +11,4 @@ red
 testcase/*
 vgcore.*
 *.d
+memo/*
