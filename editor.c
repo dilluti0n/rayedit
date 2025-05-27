@@ -1,3 +1,5 @@
+#include <limits.h>
+#include <errno.h>
 #include <stdio.h>
 #include <assert.h>
 #include <stdbool.h>
@@ -25,7 +27,7 @@ struct ed_buf {
 	size_t scroll_row;
 
 	/* file */
-	const char *file_name;
+	const char *file_name;	/* absolute path for the file */
 	const char *raw;
 	size_t raw_size;
 };
@@ -45,14 +47,19 @@ void eb_init(struct ed_buf **eb) {
 }
 
 void eb_free(struct ed_buf *eb) {
-	for (size_t i = 0; i < Vec_slinep_len(eb->line_vec); i++) {
+	size_t len = Vec_slinep_len(eb->line_vec);
+
+	for (size_t i = 0; i < len; i++) {
 		struct line *curr;
+
 		if ((curr = Vec_slinep_get(eb->line_vec, i)) != NULL)
 			line_free(curr);
 	}
 	Vec_slinep_free(eb->line_vec);
 	if (eb->raw != NULL)
 		munmap((void *)eb->raw, eb->raw_size);
+	if (eb->file_name != NULL)
+		mem_free((void *)eb->file_name);
 	mem_free(eb);
 }
 
@@ -259,7 +266,40 @@ void eb_get_line_slice(const struct ed_buf *eb, size_t pos, struct slice *sl) {
 }
 
 void eb_bind(struct ed_buf *eb, const char *path) {
-	eb->file_name = path;
+	char *resolved = mem_malloc(PATH_MAX);
+
+	eb->file_name = resolved;
+
+	if (realpath(path, resolved) != NULL)
+		return;
+
+	if (path[0] == '/') {	/* path is absolute but file not exists */
+		strcpy(resolved, path);
+		return;
+	}
+
+	/* path is not absolute and file not exists */
+	char cwd[PATH_MAX];
+
+	if (getcwd(cwd, PATH_MAX) != NULL &&
+	    strlen(cwd) + strlen(path) < PATH_MAX) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+		snprintf(resolved, PATH_MAX, "%s/%s", cwd, path);
+#pragma GCC diagnostic pop
+		return;
+	}
+
+	if (errno != ENAMETOOLONG) { /* getcwd fail with other reasons */
+		log_printf(RED_LOG_WARNING, "getcwd: %s\n", strerror(errno));
+	} else {		/* getcwd fail with too long cwd or cwd + path too long */
+		log_printf(RED_LOG_WARNING, "absolute path of file too long (>= %d)\n",
+			   PATH_MAX);
+	}
+
+	log_printf(RED_LOG_WARNING, "%s not binded to buffer\n", path);
+	mem_free(resolved);
+	eb->file_name = NULL;
 }
 
 void eb_load_file(struct ed_buf *eb) {
@@ -268,13 +308,13 @@ void eb_load_file(struct ed_buf *eb) {
 
 	int fd = open(eb->file_name, O_RDONLY);
 	if (fd == -1) {
-		perror("open: ");
+		perror("open");
 		return;
 	}
 	struct stat statbuf = {};
 	if (fstat(fd, &statbuf) == -1) {
 		close(fd);
-		perror("fstat: ");
+		perror("fstat");
 		return;
 	}
 
@@ -287,7 +327,7 @@ void eb_load_file(struct ed_buf *eb) {
 			       MAP_PRIVATE, fd, 0);
 	close(fd);
 	if (raw == MAP_FAILED) {
-		perror("mmap: ");
+		perror("mmap");
 		return;
 	}
 
@@ -323,13 +363,13 @@ void eb_save_file(struct ed_buf *eb) {
 
 	int tmp_fd = mkstemp(tmp_path);
 	if (tmp_fd == -1) {
-		perror("mktemp: ");
+		perror("mktemp");
 		return;
 	}
 
 	FILE *fp = fdopen(tmp_fd, "w");
 	if (fp == NULL) {
-		perror("fdopen: ");
+		perror("fdopen");
 		close(tmp_fd);
 		unlink(tmp_path);
 		return;
@@ -347,7 +387,7 @@ void eb_save_file(struct ed_buf *eb) {
 	fclose(fp);
 
 	if (rename(tmp_path, eb->file_name) == -1) {
-		perror("rename: ");
+		perror("rename");
 		unlink(tmp_path);
 	}
 	printf("saved to: %s\n", eb->file_name);
