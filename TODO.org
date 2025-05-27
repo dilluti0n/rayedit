@@ -19,6 +19,7 @@ malloc/free and can be overriden in tests.
 *** TODO Use existing eb->scroll_row to handle mouse-wheel and PgUp/PgDn
 ** TODO selection + clipoard (kill ring)
 ** TODO Undo/Redo via command stack
+** TODO tracking execution time
 
 * Migration
 ** TODO piece-table migration :RESEARCH:
