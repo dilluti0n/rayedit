@@ -238,15 +238,15 @@ void eb_set_cur_forward(struct ed_buf *eb) {
 	}
 }
 
-size_t eb_get_cur_col(struct ed_buf *eb) {
+size_t eb_get_cur_col(const struct ed_buf *eb) {
 	return eb->cur_col;
 }
 
-size_t eb_get_cur_row(struct ed_buf *eb) {
+size_t eb_get_cur_row(const struct ed_buf *eb) {
 	return eb->cur_row;
 }
 
-size_t eb_get_line_num(struct ed_buf *eb) {
+size_t eb_get_line_num(const struct ed_buf *eb) {
 	return Vec_slinep_len(eb->line_vec);
 }
 

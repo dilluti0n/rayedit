@@ -4,7 +4,7 @@ CC=gcc
 CFLAGS=-Wall -Wextra -O0 -I${RAYLIB_PREFIX}/include -DMAIN_WINDOW_TITLE="\"${TARGET}\""
 # LDFLAGS=-v
 LDLIBS=${RAYLIB_PREFIX}/lib/libraylib.a -lm
-OBJS = main.o line.o editor.o log.o
+OBJS = main.o line.o editor.o log.o redr.o input.o
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -DDEBUG -ggdb
@@ -27,6 +27,12 @@ editor.o: editor.c line.h slice.h makefile
 	${CC} ${CFLAGS} -c $< -o $@
 
 log.o: log.c log.h makefile
+	${CC} ${CFLAGS} -c $< -o $@
+
+redr.o: redr_raylib.c redr.h
+	${CC} ${CFLAGS} -c $< -o $@
+
+input.o: input_raylib.c input.h
 	${CC} ${CFLAGS} -c $< -o $@
 
 .PHONY+=test
