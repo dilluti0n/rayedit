@@ -273,6 +273,9 @@ void eb_bind(struct ed_buf *eb, const char *path) {
 	if (realpath(path, resolved) != NULL)
 		return;
 
+	if (errno == ENAMETOOLONG)
+		goto bind_fail;
+
 	if (path[0] == '/') {	/* path is absolute but file not exists */
 		strcpy(resolved, path);
 		return;
@@ -290,13 +293,8 @@ void eb_bind(struct ed_buf *eb, const char *path) {
 		return;
 	}
 
-	if (errno != ENAMETOOLONG) { /* getcwd fail with other reasons */
-		log_printf(RED_LOG_WARNING, "getcwd: %s\n", strerror(errno));
-	} else {		/* getcwd fail with too long cwd or cwd + path too long */
-		log_printf(RED_LOG_WARNING, "absolute path of file too long (>= %d)\n",
-			   PATH_MAX);
-	}
-
+bind_fail:
+	log_printf(RED_LOG_WARNING, "%s\n", strerror(errno));
 	log_printf(RED_LOG_WARNING, "%s not binded to buffer\n", path);
 	mem_free(resolved);
 	eb->file_name = NULL;
