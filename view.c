@@ -8,7 +8,7 @@
 
 #define MIN(a, b) ((a) < (b))? (a) : (b)
 
-struct view;			/* for defining vector first */
+struct view;			/* to define vector first */
 
 DEFINE_VECTOR(Vec_sviewp, struct view *);
 
@@ -46,6 +46,10 @@ struct view {
 
 	/* flag */
 	/* TODO: int isdirty:1; */
+	int is_posx_frac:1;
+	int is_posy_frac:1;
+	int is_width_frac:1;	/* is width absolute or fraction of parant's width */
+	int is_height_frac:1;	/* is height absolute or fraction of parant's width */
 };
 
 static inline void draw_textn(struct redr_ctx *window, int x, int y, int size,
@@ -87,6 +91,9 @@ void view_init_root(struct view **root, struct redr_ctx *window) {
 	nroot->font_spacing = 0;
 
 	nroot->ops = &root_op;
+
+	nroot->is_width_frac = 0;
+	nroot->is_height_frac = 0;
 
 	*root = nroot;
 }
@@ -154,11 +161,40 @@ void view_draw_under(struct view *root) {
 	Vec_sviewp_free(stack);
 }
 
+void view_resize(struct view *vw, float w, float h) {
+	vw->w = w;
+	vw->h = h;
+}
+
 struct view_eb {
 	struct view base;
 	struct ed_buf *eb;
 	float scroll;
 };
+
+static float real_posx(struct view *veb) {
+	if (veb->is_posx_frac)
+		return veb->parent->w * veb->posx;
+	return veb->posx;
+}
+
+static float real_posy(struct view *veb) {
+	if (veb->is_posy_frac)
+		return veb->parent->h * veb->posy;
+	return veb->posy;
+}
+
+static float real_width(struct view *veb) {
+	if (veb->is_width_frac)
+		return veb->parent->w * veb->w;
+	return veb->w;
+}
+
+static float real_height(struct view *veb) {
+	if (veb->is_height_frac)
+		return veb->parent->h * veb->h;
+	return veb->h;
+}
 
 static void view_eb_draw(struct view *veb) {
 	struct ed_buf *eb = ((struct view_eb *)veb)->eb;
@@ -166,10 +202,9 @@ static void view_eb_draw(struct view *veb) {
 
 	float font_size = veb->font_size;
 	float spacing = veb->font_spacing;
-	float font_height = redr_measure_text(veb->window, "a", font_size, spacing).y;
-
+	struct redr_vector2 fontsize = redr_measure_text(veb->window, "M", font_size, spacing);
 	struct redr_ctx *window =  veb->window;
-	const size_t linenum_to_draw = MIN(eb_get_line_num(eb), veb->h / font_height);
+	const size_t linenum_to_draw = MIN(eb_get_line_num(eb), real_height(veb) / fontsize.y);
 	const float padding = 10.f;
 
 #ifdef CONFIG_DEBUG
@@ -189,9 +224,9 @@ static void view_eb_draw(struct view *veb) {
 			   "[draw]: line %lu, ptr=%p, len=%lu\n",
 			   i, sl.ptr, sl.len);
 #endif
-		float text_posx = veb->posx + padding;
-		float text_posy = veb->posy + padding + font_size * i;
-		size_t len = MIN((size_t)veb->w, sl.len);
+		float text_posx = real_posx(veb) + padding;
+		float text_posy = real_posy(veb) + padding + font_size * i;
+		size_t len = MIN((size_t) (real_width(veb) / fontsize.x), sl.len);
 
 		if (i != eb_get_cur_row(eb)) {
 			draw_textn(veb->window,
@@ -208,8 +243,7 @@ static void view_eb_draw(struct view *veb) {
 			if (buf[cur_col] == '\0')
 				buf[cur_col + 1] = '\0';
 			buf[cur_col] = '_';
-			redr_draw_text(window, buf, text_posx, text_posy,
-				       font_size, BLACK);
+			draw_textn(window, text_posx, text_posy, font_size, BLACK, buf, len);
 		}
 	}
 }
@@ -222,14 +256,17 @@ const struct view_ops view_eb_ops = {
 struct view_eb *view_eb_create_under(struct view *upper,
 				     struct ed_buf *eb,
 				     float posx,
+				     bool is_posx_frac,
 				     float posy,
+				     bool is_posy_frac,
 				     float w,
+				     bool is_w_frac,
 				     float h,
+				     bool is_h_frac,
 				     float font_size,
 				     float font_spacing,
 				     float scroll) {
 	struct view_eb *veb = mem_malloc(sizeof *veb);
-
 
 	((struct view *)veb)->type = VIEW_EB;
 	((struct view *)veb)->window = upper->window;
@@ -246,6 +283,11 @@ struct view_eb *view_eb_create_under(struct view *upper,
 	((struct view *)veb)->font_spacing = font_spacing;
 
 	((struct view *)veb)->ops = &view_eb_ops;
+
+	((struct view *)veb)->is_width_frac = (int)is_w_frac;
+	((struct view *)veb)->is_height_frac = (int)is_h_frac;
+	((struct view *)veb)->is_posx_frac = (int)is_posx_frac;
+	((struct view *)veb)->is_posy_frac = (int)is_posy_frac;
 
 	veb->eb = eb;
 	veb->scroll = scroll;

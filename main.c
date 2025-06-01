@@ -30,15 +30,17 @@ int main(int argc, char *argv[]) {
 	struct view *root;
 	view_init_root(&root, window);
 
-	view_eb_create_under(root, eb, 0, 0,
-			     (float)INIT_WIDTH/2, INIT_HEIGHT, 20, 1, 0);
-	view_eb_create_under(root, eb, (float)INIT_WIDTH / 2, 0,
-			     (float)INIT_WIDTH/2, INIT_HEIGHT, 20, 1, 0);
+	view_eb_create_under(root, eb, 0, true, 0, true,
+			     0.5, true, 1, true, 20, 1, 0);
+	view_eb_create_under(root, eb, 0.5, true, 0, true,
+			     0.5, true, 1, true, 20, 1, 0);
 	while (!redr_should_close(window)) {
 		redr_begin_draw(window);
 
-		if (redr_is_resized(window))
+		if (redr_is_resized(window)) {
 			redr_resize(window, redr_width(window), redr_height(window));
+			view_resize(root, redr_width(window), redr_height(window));
+		}
 
 		/* TODO: input -> view -> eb */
 		input_handle_event(eb);
