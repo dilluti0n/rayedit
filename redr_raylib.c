@@ -1,12 +1,8 @@
 #include <raylib.h>
 
+#include "redr.h"
 #include "log.h"
-#include "editor.h"
 #include "mem.h"
-
-#include <string.h>
-
-#define MIN(a, b) ((a) < (b))? (a) : (b)
 
 struct redr_ctx {
 	/* window */
@@ -14,9 +10,7 @@ struct redr_ctx {
 	float height;
 	const char *title;
 
-	/* font */
-	float font_size;
-	float font_spacing;
+	void *window_handle;
 };
 
 static void CustomLogCallback(int logLevel, const char *text, va_list args) {
@@ -49,27 +43,15 @@ static void CustomLogCallback(int logLevel, const char *text, va_list args) {
 	log_printf(red_level, "\n");
 }
 
-static inline void draw_text_slice(int x, int y, int size, Color c,
-				   const struct slice sl) {
-	char line[4096];
-	size_t len;
-	if ((len = sl.len) > sizeof (line) - 1)
-		len = sizeof(line) - 1;
-	memcpy(line, sl.ptr, len);
-	line[len] = '\0';
-	DrawText(line, x, y, size, c);
-}
-
 void redr_init(struct redr_ctx **ctxp, float width, float height,
-	       float font_size, float font_spacing, const char *title) {
+	       const char *title) {
 	SetTraceLogCallback(CustomLogCallback);
 
 	struct redr_ctx *ctx = mem_malloc(sizeof(struct redr_ctx));
 	ctx->height = height;
 	ctx->width = width;
 	ctx->title = title;
-	ctx->font_size = font_size;
-	ctx->font_spacing = font_spacing;
+	ctx->window_handle = GetWindowHandle();
 
 	*ctxp = ctx;
 
@@ -80,63 +62,61 @@ void redr_init(struct redr_ctx **ctxp, float width, float height,
 
 bool redr_should_close(struct redr_ctx *ctx) {
 	return WindowShouldClose();
+	(void)ctx;
 }
 
-void redr_resize(struct redr_ctx *ctx) {
-	if (IsWindowResized()) {
-		ctx->width = GetScreenWidth();
-		ctx->height = GetScreenHeight();
-	}
+bool redr_is_resized(struct redr_ctx *ctx) {
+	return IsWindowResized();
+	(void)ctx;
 }
 
-void redr_draw(struct redr_ctx *ctx, const struct ed_buf *eb) {
-	float font_size = ctx->font_size;
-	float spacing = ctx->font_spacing;
-	float font_height = MeasureTextEx(GetFontDefault(), "a", font_size, spacing).y;
+float redr_width(struct redr_ctx *ctx) {
+	return GetScreenWidth();
+	(void)ctx;
+}
 
+float redr_height(struct redr_ctx *ctx) {
+	return GetScreenHeight();
+	(void)ctx;
+}
+
+void redr_resize(struct redr_ctx *ctx, float width, float height) {
+	ctx->width = width;
+	ctx->height = height;
+}
+
+struct redr_vector2 redr_measure_text(struct redr_ctx *ctx, const char *text,
+				      float font_size, float spacing) {
+	Vector2 raw = MeasureTextEx(GetFontDefault(), text, font_size, spacing);
+	struct redr_vector2 res = {.x = raw.x, .y = raw.y };
+	return res;
+
+	(void)ctx;
+}
+
+void redr_draw_text(struct redr_ctx *ctx, const char *text,
+		    int x, int y, int font_size, struct redr_color color) {
+	DrawText(text, x, y, font_size, *(Color *)&color);
+
+	(void)ctx;
+}
+
+void redr_clear_background(struct redr_ctx *ctx, struct redr_color color) {
+	ClearBackground(*(Color *)&color);
+
+	(void)ctx;
+}
+
+void redr_begin_draw(struct redr_ctx *ctx) {
 	BeginDrawing();
-	ClearBackground(RAYWHITE);
 
-	const size_t linenum_to_draw = MIN(eb_get_line_num(eb), ctx->height / font_height);
+	(void)ctx;
+}
 
-#ifdef CONFIG_DEBUG
-	log_printf(RED_LOG_DEBUG,
-		   "[draw]: %lu lines ------\n", linenum_to_draw);
-	log_printf(RED_LOG_DEBUG,
-		   "[draw]: cursor: (%lu, %lu) ------\n",
-		   eb_get_cur_col(eb), eb_get_cur_row(eb));
-#endif
-
-
-	for (size_t i = 0; i <= linenum_to_draw; i++) {
-		struct slice sl = {};
-		eb_get_line_slice(eb, i, &sl);
-
-#ifdef CONFIG_DEBUG
-		log_printf(RED_LOG_DEBUG,
-			   "[draw]: line %lu, ptr=%p, len=%lu\n",
-			   i, sl.ptr, sl.len);
-#endif
-
-		if (i != eb_get_cur_row(eb)) {
-			draw_text_slice(10, 10 + font_size * i,
-					font_size, BLACK, sl);
-		} else { /* draw cursor */
-
-#define BUFSIZE 4096
-			char buf[BUFSIZE];
-			size_t cur_col = eb_get_cur_col(eb);
-			strncpy(buf, sl.ptr == NULL? "" : sl.ptr, MIN(sl.len, BUFSIZE));
-			if (sl.len < 4096)
-				buf[sl.len] = '\0';
-			if (buf[cur_col] == '\0')
-				buf[cur_col + 1] = '\0';
-			buf[cur_col] = '_';
-			DrawText(buf, 10, 10 + font_size * i,
-				 font_size, BLACK);
-		}
-	}
+void redr_end_draw(struct redr_ctx *ctx) {
 	EndDrawing();
+
+	(void)ctx;
 }
 
 void redr_free(struct redr_ctx *ctx) {
