@@ -24,7 +24,6 @@ struct ed_buf {
 	Vec_slinep *line_vec;
 	size_t cur_row;
 	size_t cur_col;
-	size_t scroll_row;
 
 	/* file */
 	const char *file_name;	/* absolute path for the file */
@@ -38,7 +37,6 @@ void eb_init(struct ed_buf **eb) {
 	Vec_slinep_init(&neb->line_vec);
 	neb->cur_row = 0;
 	neb->cur_col = 0;
-	neb->scroll_row = 0;
 	neb->file_name = NULL;
 	neb->raw = NULL;
 	neb->raw_size = 0;
