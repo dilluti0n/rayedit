@@ -46,15 +46,15 @@ struct view {
 	int dirty:1;		/* re-draw only when dirty */
 };
 
-static inline void draw_text_slice(struct redr_ctx *window, int x, int y, int size,
-				   struct redr_color c,
-				   const struct slice sl) {
+static inline void draw_textn(struct redr_ctx *window, int x, int y, int size,
+			      struct redr_color c,
+			      const char *text, size_t len) {
 	char line[4096];
-	size_t len;
-	if ((len = sl.len) > sizeof (line) - 1)
-		len = sizeof(line) - 1;
-	memcpy(line, sl.ptr, len);
-	line[len] = '\0';
+	size_t rlen;
+	if ((rlen = len) > sizeof line - 1)
+		rlen = sizeof line - 1;
+	memcpy(line, text, len);
+	line[rlen] = '\0';
 	redr_draw_text(window, line, x, y, size, c);
 }
 
@@ -168,8 +168,8 @@ static void view_eb_draw(struct view *veb) {
 	float font_height = redr_measure_text(veb->window, "a", font_size, spacing).y;
 
 	struct redr_ctx *window =  veb->window;
-
 	const size_t linenum_to_draw = MIN(eb_get_line_num(eb), veb->h / font_height);
+	const float padding = 10.f;
 
 #ifdef CONFIG_DEBUG
 	log_printf(RED_LOG_DEBUG,
@@ -188,11 +188,14 @@ static void view_eb_draw(struct view *veb) {
 			   "[draw]: line %lu, ptr=%p, len=%lu\n",
 			   i, sl.ptr, sl.len);
 #endif
+		float text_posx = veb->posx + padding;
+		float text_posy = veb->posy + padding + font_size * i;
+		size_t len = MIN((size_t)veb->w, sl.len);
 
 		if (i != eb_get_cur_row(eb)) {
-			draw_text_slice(veb->window,
-					veb->posx + 10, veb->posy + 10 + font_size * i,
-					font_size, BLACK, sl);
+			draw_textn(veb->window,
+				   text_posx, text_posy,
+				   font_size, BLACK, sl.ptr, len);
 		} else { /* draw cursor */
 
 #define BUFSIZE 4096
@@ -204,7 +207,7 @@ static void view_eb_draw(struct view *veb) {
 			if (buf[cur_col] == '\0')
 				buf[cur_col + 1] = '\0';
 			buf[cur_col] = '_';
-			redr_draw_text(window, buf, veb->posx + 10, veb->posy + 10 + font_size * i,
+			redr_draw_text(window, buf, text_posx, text_posy,
 				       font_size, BLACK);
 		}
 	}
