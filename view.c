@@ -34,8 +34,8 @@ struct view {
 	/* geometry */
 	float posx;
 	float posy;
-	float w;
-	float h;
+	float width;
+	float height;
 
 	/* style */
 	float font_size;
@@ -84,8 +84,8 @@ void view_init_root(struct view **root, struct redr_ctx *window) {
 
 	nroot->posx = 0;
 	nroot->posy = 0;
-	nroot->w = redr_width(window);
-	nroot->h = redr_height(window);
+	nroot->width = redr_width(window);
+	nroot->height = redr_height(window);
 
 	nroot->font_size = 0;
 	nroot->font_spacing = 0;
@@ -162,8 +162,8 @@ void view_draw_under(struct view *root) {
 }
 
 void view_resize(struct view *vw, float w, float h) {
-	vw->w = w;
-	vw->h = h;
+	vw->width = w;
+	vw->height = h;
 }
 
 struct view_eb {
@@ -174,26 +174,26 @@ struct view_eb {
 
 static float real_posx(struct view *veb) {
 	if (veb->is_posx_frac)
-		return veb->parent->w * veb->posx;
+		return veb->parent->width * veb->posx;
 	return veb->posx;
 }
 
 static float real_posy(struct view *veb) {
 	if (veb->is_posy_frac)
-		return veb->parent->h * veb->posy;
+		return veb->parent->height * veb->posy;
 	return veb->posy;
 }
 
 static float real_width(struct view *veb) {
 	if (veb->is_width_frac)
-		return veb->parent->w * veb->w;
-	return veb->w;
+		return veb->parent->width * veb->width;
+	return veb->width;
 }
 
 static float real_height(struct view *veb) {
 	if (veb->is_height_frac)
-		return veb->parent->h * veb->h;
-	return veb->h;
+		return veb->parent->height * veb->height;
+	return veb->height;
 }
 
 static void view_eb_draw(struct view *veb) {
@@ -276,8 +276,8 @@ struct view_eb *view_eb_create_under(struct view *upper,
 
 	((struct view *)veb)->posx = posx;
 	((struct view *)veb)->posy = posy;
-	((struct view *)veb)->w = w;
-	((struct view *)veb)->h = h;
+	((struct view *)veb)->width = w;
+	((struct view *)veb)->height = h;
 
 	((struct view *)veb)->font_size = font_size;
 	((struct view *)veb)->font_spacing = font_spacing;
