@@ -7,7 +7,6 @@
 
 struct view;
 
-
 void view_init_root(struct view **root, struct redr_ctx *window);
 size_t view_child_num(struct view *vw);
 void view_free_under(struct view *root);

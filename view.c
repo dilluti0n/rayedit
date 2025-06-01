@@ -43,7 +43,9 @@ struct view {
 
 	/* action */
 	const struct view_ops *ops;
-	int dirty:1;		/* re-draw only when dirty */
+
+	/* flag */
+	/* TODO: int isdirty:1; */
 };
 
 static inline void draw_textn(struct redr_ctx *window, int x, int y, int size,
@@ -85,7 +87,6 @@ void view_init_root(struct view **root, struct redr_ctx *window) {
 	nroot->font_spacing = 0;
 
 	nroot->ops = &root_op;
-	nroot->dirty = 0;
 
 	*root = nroot;
 }
@@ -245,7 +246,6 @@ struct view_eb *view_eb_create_under(struct view *upper,
 	((struct view *)veb)->font_spacing = font_spacing;
 
 	((struct view *)veb)->ops = &view_eb_ops;
-	((struct view *)veb)->dirty = 0;
 
 	veb->eb = eb;
 	veb->scroll = scroll;
