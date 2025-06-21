@@ -79,12 +79,10 @@ eb->raw_size: %lu\n",
 	       eb->line_vec,
 	       eb->cur_row,
 	       eb->cur_col,
-	       eb->scroll_row,
 	       eb->file_name,
 	       eb->raw,
 	       eb->raw_size);
 }
-
 
 static void print_eb_vec(struct ed_buf *eb) {
 	if (eb->line_vec != NULL) {
