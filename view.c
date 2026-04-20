@@ -214,10 +214,14 @@ static void view_eb_draw(struct view *veb) {
 		   "[draw]: cursor: (%lu, %lu) ------\n",
 		   eb_get_cur_col(eb), eb_get_cur_row(eb));
 #endif
+	if (scroll >= eb_get_line_num(eb))
+		/* nothing to draw */
+		return;
 
-	for (size_t i = scroll; i <= linenum_to_draw + scroll; i++) {
+	for (size_t i = 0; i <= linenum_to_draw; i++) {
+		size_t linenum = i + scroll; /* Cursor's real line number */
 		struct slice sl = {};
-		eb_get_line_slice(eb, i, &sl);
+		eb_get_line_slice(eb, linenum, &sl);
 
 #ifdef CONFIG_DEBUG
 		log_printf(RED_LOG_DEBUG,
@@ -228,13 +232,14 @@ static void view_eb_draw(struct view *veb) {
 		float text_posy = real_posy(veb) + padding + font_size * i;
 		size_t len = MIN((size_t) (real_width(veb) / fontsize.x), sl.len);
 
-		if (i != eb_get_cur_row(eb)) {
+		if (linenum != eb_get_cur_row(eb)) {
 			draw_textn(veb->window,
 				   text_posx, text_posy,
 				   font_size, BLACK, sl.ptr, len);
-		} else { /* draw cursor */
+		} else {
+			/* draw cursor */
+			const size_t BUFSIZE = 4096;
 
-#define BUFSIZE 4096
 			char buf[BUFSIZE];
 			size_t cur_col = eb_get_cur_col(eb);
 			strncpy(buf, sl.ptr == NULL? "" : sl.ptr, MIN(sl.len, BUFSIZE));

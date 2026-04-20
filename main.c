@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 	view_init_root(&root, window);
 
 	view_eb_create_under(root, eb, 0, true, 0, true,
-			     0.5, true, 1, true, 20, 1, 0);
+			     0.5, true, 1, true, 20, 1, 50);
 	view_eb_create_under(root, eb, 0.5, true, 0, true,
 			     0.5, true, 1, true, 20, 1, 0);
 	while (!redr_should_close(window)) {
