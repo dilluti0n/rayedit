@@ -218,10 +218,10 @@ static void view_eb_draw(struct view *veb) {
 		/* nothing to draw */
 		return;
 
-	for (size_t i = 0; i <= linenum_to_draw; i++) {
-		size_t linenum = i + scroll; /* Cursor's real line number */
+	for (size_t display_idx = 0; display_idx <= linenum_to_draw; display_idx++) {
+		size_t file_idx = display_idx + scroll; /* Cursor's real line number */
 		struct slice sl = {};
-		eb_get_line_slice(eb, linenum, &sl);
+		eb_get_line_slice(eb, file_idx, &sl);
 
 #ifdef CONFIG_DEBUG
 		log_printf(RED_LOG_DEBUG,
@@ -229,26 +229,39 @@ static void view_eb_draw(struct view *veb) {
 			   i, sl.ptr, sl.len);
 #endif
 		float text_posx = real_posx(veb) + padding;
-		float text_posy = real_posy(veb) + padding + font_size * i;
+		float text_posy = real_posy(veb) + padding + font_size * display_idx;
 		size_t len = MIN((size_t) (real_width(veb) / fontsize.x), sl.len);
 
-		if (linenum != eb_get_cur_row(eb)) {
+		if (file_idx != eb_get_cur_row(eb)) {
 			draw_textn(veb->window,
 				   text_posx, text_posy,
 				   font_size, BLACK, sl.ptr, len);
-		} else {
-			/* draw cursor */
+		} else {  /* draw cursor */
 			const size_t BUFSIZE = 4096;
-
 			char buf[BUFSIZE];
 			size_t cur_col = eb_get_cur_col(eb);
-			strncpy(buf, sl.ptr == NULL? "" : sl.ptr, MIN(sl.len, BUFSIZE));
-			if (sl.len < 4096)
-				buf[sl.len] = '\0';
-			if (buf[cur_col] == '\0')
-				buf[cur_col + 1] = '\0';
-			buf[cur_col] = '_';
-			draw_textn(window, text_posx, text_posy, font_size, BLACK, buf, len);
+
+			/* copy line content */
+			const size_t copy_len = MIN(sl.len, BUFSIZE - 2); /* -2 for cursor + null */
+			if (sl.ptr != NULL)
+				memcpy(buf, sl.ptr, copy_len);
+
+			/* extend buffer if cursor is past end of line */
+			size_t buf_len = copy_len;
+			if (cur_col >= buf_len) {
+				/* pad with spaces up to cursor position */
+				while (buf_len < cur_col && buf_len < BUFSIZE - 2)
+					buf[buf_len++] = ' ';
+				buf[buf_len++] = '_';
+			} else {
+				buf[cur_col] = '_';
+			}
+			buf[buf_len] = '\0';
+
+			/* draw */
+			const size_t max_chars = (size_t)(real_width(veb) / fontsize.x);
+			const size_t draw_len = MIN(max_chars, buf_len);
+			draw_textn(window, text_posx, text_posy, font_size, BLACK, buf, draw_len);
 		}
 	}
 }
