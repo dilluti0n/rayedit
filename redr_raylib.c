@@ -14,12 +14,10 @@ struct redr_ctx {
 };
 
 static void CustomLogCallback(int logLevel, const char *text, va_list args) {
-	enum log_level red_level = RED_LOG_ALL;
+	enum log_level red_level;
 
 	switch (logLevel) {
 	case LOG_ALL:
-		red_level = RED_LOG_ALL;
-		break;
 	case LOG_TRACE:
 	case LOG_DEBUG:
 		red_level = RED_LOG_DEBUG;
