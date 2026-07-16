@@ -98,7 +98,7 @@ Test(editor_suite, middle_of_line) {
 	struct ed_buf *eb = NULL;
 	struct slice sl = {};
 
-	log_init(RED_LOG_ALL, stdout);
+	log_init(RED_LOG_DEBUG, stdout);
 
 	eb_init(&eb);
 	cr_assert_eb_eq(eb, 0, 0);

@@ -246,11 +246,6 @@ size_t eb_get_line_num(const struct ed_buf *eb) {
 	return Vec_slinep_len(eb->line_vec);
 }
 
-const char *eb_get_line_string(struct ed_buf *eb, size_t pos) {
-	struct line *li = eb_get_line(eb, pos);
-	return li == NULL? "" : line_get_string(li);
-}
-
 void eb_get_line_slice(const struct ed_buf *eb, size_t pos, struct slice *sl) {
 	struct line *li = eb_get_line(eb, pos);
 	if (li == NULL) {

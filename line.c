@@ -125,14 +125,6 @@ void line_split(struct line *li, size_t pos, struct line **newlinep) {
 	*newlinep = newline;
 }
 
-/* obsolated */
-const char *line_get_string(struct line *li) {
-	edit_happen(li);
-
-	ASSERT(li != NULL && li->vec != NULL);
-	return (const char *)li->vec->data;
-}
-
 void line_get_slice(const struct line *li, struct slice *sl) {
 	ASSERT(li != NULL);
 	ASSERT(sl != NULL);
