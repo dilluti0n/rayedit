@@ -1,7 +1,5 @@
 * DONE Choose either Criterion or Unity as the testing framework and add a target test to the build system.
 * DONE Write an initial TDD (Test-Driven Development) set for vector and line.
-* TODO As implement new Editorbuffer API, write corresponding unit tests.
-
 * Refactor
 ** DONE Remove the implicit dependancy of MemAlloc and MemFree provided by Raylib.
 introduce a tiny allocater wrapper(ed_alloc.h) that defaults to
@@ -9,7 +7,6 @@ malloc/free and can be overriden in tests.
 ** DONE Replace scattered `#ifdef DEBUG` prints with a reallog macro family.
 (levels: DEBUG/INFO/WARNING/ERROR/CRITICAL)
 ** Strengthen `line`/`editor` invariants.
-*** TODO Guarantee cursor never overwrites the terminating '\0'
 *** TODO Add edge-case tests: enpty line, NULL-line placeholders, split/cat boundaries
 
 * Implement
@@ -20,13 +17,3 @@ malloc/free and can be overriden in tests.
 ** TODO selection + clipoard (kill ring)
 ** TODO Undo/Redo via command stack
 ** TODO tracking execution time
-
-* Migration
-** TODO piece-table migration :RESEARCH:
-spike branch; benchmark vs. current vector-of-lines.
-** Rendering optimiation :PERF:
-Dirty-line tracking, font atlas reuse.
-** CI pipeline :CI:
-Github actions, ASan, clang-tidy, coverage >= 80%.
-** Syntax highlighting stub (Tree-sitter, etc.) :LATER:
-** Config/keymap loader & basic plugin hooks :LATER:
