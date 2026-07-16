@@ -65,7 +65,7 @@ static inline void draw_textn(struct redr_ctx *window, int x, int y, int size,
 }
 
 static void draw_root(struct view *v) {
-	redr_clear_background(v->window, WHITE);
+	redr_clear_background(v->window, REDR_WHITE);
 }
 
 const struct view_ops root_op = {
@@ -235,7 +235,7 @@ static void view_eb_draw(struct view *veb) {
 		if (file_idx != eb_get_cur_row(eb)) {
 			draw_textn(veb->window,
 				   text_posx, text_posy,
-				   font_size, BLACK, sl.ptr, len);
+				   font_size, REDR_BLACK, sl.ptr, len);
 		} else {  /* draw cursor */
 			const size_t BUFSIZE = 4096;
 			char buf[BUFSIZE];
@@ -261,7 +261,7 @@ static void view_eb_draw(struct view *veb) {
 			/* draw */
 			const size_t max_chars = (size_t)(real_width(veb) / fontsize.x);
 			const size_t draw_len = MIN(max_chars, buf_len);
-			draw_textn(window, text_posx, text_posy, font_size, BLACK, buf, draw_len);
+			draw_textn(window, text_posx, text_posy, font_size, REDR_BLACK, buf, draw_len);
 		}
 	}
 }
