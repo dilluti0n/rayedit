@@ -13,10 +13,12 @@ const int INIT_WIDTH = 800;
 const int INIT_HEIGHT = 600;
 
 int main(int argc, char *argv[]) {
-	if (argc != 2)
-		return 1;
-
 	log_init(LOGLEVEL, stdout);
+
+	if (argc != 2) {
+		ERROR("Usage: %s <file>", argv[0]);
+		return 1;
+	}
 
 	struct redr_ctx *window;
 
